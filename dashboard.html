@@ -2,95 +2,89 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Dashboard – HabitatHub</title>
+  <title>Dashboard – Affordable Properties</title>
   <link rel="stylesheet" href="style.css"/>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 </head>
 <body>
-  <header class="nav">
-    <div class="brand"><a href="./">HabitatHub</a></div>
-    <nav>
-      <a href="admin.html" id="nav-admin" class="hide">Admin</a>
-      <button id="btn-logout">Logout</button>
-    </nav>
-  </header>
+<header class="nav">
+  <div class="brand"><a href="./">Affordable Properties</a></div>
+  <nav>
+    <a href="admin.html" id="nav-admin" class="hide">Admin</a>
+    <button id="btn-logout">Logout</button>
+  </nav>
+</header>
 
-  <main class="container">
-    <h1>Post a new listing</h1>
-    <form id="listingForm" class="form">
-      <div class="row">
-        <select id="type" required>
-          <option value="">Rent or Sale</option>
-          <option value="rent">Rent</option>
-          <option value="sale">Sale</option>
-        </select>
-        <select id="propertyType" required>
-          <option value="">Property type</option>
-          <option>apartment</option><option>house</option><option>villa</option><option>studio</option>
-        </select>
-      </div>
+<main class="container">
+  <h1>Post a new listing</h1>
+  <form id="listingForm" class="form">
+    <div class="row">
+      <select id="type" required>
+        <option value="">Rent or Sale</option><option value="rent">Rent</option><option value="sale">Sale</option>
+      </select>
+      <select id="propertyType" required>
+        <option value="">Property type</option>
+        <option>apartment</option><option>house</option><option>villa</option><option>studio</option>
+      </select>
+      <select id="currency"><option>MUR</option><option>AED</option><option>USD</option></select>
+    </div>
 
-      <div class="row">
-        <input id="title" placeholder="Listing title" required/>
-        <input id="price" type="number" placeholder="Price" required/>
-        <select id="currency"><option>MUR</option><option>AED</option><option>USD</option></select>
-      </div>
+    <div class="row">
+      <input id="title" placeholder="Listing title" required/>
+      <input id="price" type="number" placeholder="Price" required/>
+      <input id="sizeSqm" type="number" min="0" placeholder="Size (sqm)"/>
+    </div>
 
-      <div class="row">
-        <input id="bedrooms" type="number" min="0" placeholder="Bedrooms"/>
-        <input id="bathrooms" type="number" min="0" placeholder="Bathrooms"/>
-        <input id="sizeSqm" type="number" min="0" placeholder="Size (sqm)"/>
-      </div>
+    <div class="row">
+      <input id="bedrooms" type="number" min="0" placeholder="Bedrooms"/>
+      <input id="bathrooms" type="number" min="0" placeholder="Bathrooms"/>
+      <input id="location" placeholder="Area / Street"/>
+    </div>
 
-      <div class="row">
-        <input id="city" placeholder="City" required/>
-        <input id="country" placeholder="Country" required/>
-        <input id="location" placeholder="Location details (area, street)"/>
-      </div>
+    <div class="row">
+      <input id="city" placeholder="City" required/>
+      <input id="country" placeholder="Country" required/>
+      <input id="contactPhone" placeholder="Phone" required/>
+    </div>
 
-      <textarea id="description" placeholder="Description" rows="5" required></textarea>
+    <textarea id="description" placeholder="Description" rows="5" required></textarea>
 
-      <fieldset>
-        <legend>Images</legend>
-        <input type="file" id="imagesInput" accept="image/*" multiple/>
-        <div id="preview" class="preview"></div>
-      </fieldset>
+    <fieldset>
+      <legend>Images</legend>
+      <input type="file" id="imagesInput" accept="image/*" multiple/>
+      <div id="preview" class="preview"></div>
+    </fieldset>
 
-      <fieldset>
-        <legend>Contact</legend>
-        <input id="contactName" placeholder="Your name" required/>
-        <input id="contactPhone" placeholder="Phone" required/>
-        <input id="contactEmail" type="email" placeholder="Email" required/>
-      </fieldset>
+    <fieldset>
+      <legend>Contact</legend>
+      <input id="contactName" placeholder="Your name" required/>
+      <input id="contactEmail" type="email" placeholder="Email" required/>
+    </fieldset>
 
-      <button type="submit">Submit for approval</button>
-    </form>
+    <button type="submit">Submit for approval</button>
+  </form>
 
-    <h2>Your listings</h2>
-    <div id="myListings" class="grid"></div>
-  </main>
+  <h2>Your listings</h2>
+  <div id="myListings" class="grid"></div>
+</main>
 
-  <template id="myCardTpl">
-    <div class="card">
-      <div class="card-img"></div>
-      <div class="card-body">
-        <h3 class="card-title"></h3>
-        <p class="card-meta"></p>
-        <p class="card-price"></p>
-        <p class="badge"></p>
-        <div class="actions">
-          <button class="edit">Edit</button>
-          <button class="delete outline">Delete</button>
-        </div>
+<template id="myCardTpl">
+  <div class="card">
+    <div class="card-img"></div>
+    <div class="card-body">
+      <h3 class="card-title"></h3>
+      <p class="card-meta"></p>
+      <p class="card-price"></p>
+      <p class="badge"></p>
+      <div class="actions">
+        <button class="edit">Edit</button>
+        <button class="delete outline">Delete</button>
       </div>
     </div>
-  </template>
+  </div>
+</template>
 
-  <script src="js/firebase-config.js"></script>
-  <script src="js/app.js"></script>
-  <script src="js/cloudinary.js"></script>
-  <script src="js/dashboard.js"></script>
+<script type="module" src="js/app.js"></script>
+<script type="module" src="js/cloudinary.js"></script>
+<script type="module" src="js/dashboard.js"></script>
 </body>
 </html>
