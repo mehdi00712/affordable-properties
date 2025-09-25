@@ -1,43 +1,24 @@
-import { requireAuth, currencyFmt } from './app.js';
+import { requireAuth, auth, db, currencyFmt } from './app.js';
+import {
+  collection, query, where, orderBy, getDocs, doc, updateDoc, deleteDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const pendingDiv = document.getElementById('pending');
 const approvedDiv = document.getElementById('approved');
 const tpl = document.getElementById('adminCardTpl');
 
-let currentUser;
-
 async function requireAdmin() {
-  currentUser = await requireAuth();
-  const roleDoc = await firebase.firestore().collection('roles').doc(currentUser.uid).get();
-  if (!roleDoc.exists || roleDoc.data().role !== 'admin') {
-    alert('Admins only'); location.href = './'; return;
+  const user = await requireAuth();
+  const roleSnap = await getDoc(doc(db, 'roles', user.uid));
+  if (!roleSnap.exists() || roleSnap.data().role !== 'admin') {
+    alert('Admins only'); location.href = './'; throw new Error('Not admin');
   }
 }
 
-async function load() {
-  await requireAdmin();
-  const db = firebase.firestore();
-
-  // Pending
-  {
-    pendingDiv.innerHTML = '';
-    const snap = await db.collection('listings').where('status','==','pending').orderBy('createdAt','desc').get();
-    for (const d of snap.docs) { pendingDiv.appendChild(makeCard(d)); }
-    if (snap.empty) pendingDiv.innerHTML = '<p>No pending items.</p>';
-  }
-  // Approved
-  {
-    approvedDiv.innerHTML = '';
-    const snap = await db.collection('listings').where('status','==','approved').orderBy('createdAt','desc').limit(50).get();
-    for (const d of snap.docs) { approvedDiv.appendChild(makeCard(d)); }
-    if (snap.empty) approvedDiv.innerHTML = '<p>No approved items.</p>';
-  }
-}
-
-function makeCard(doc) {
-  const l = {id:doc.id, ...doc.data()};
+function makeCard(l) {
   const el = tpl.content.firstElementChild.cloneNode(true);
-  el.querySelector('.card-img').style.backgroundImage = `url('${l.images?.[0] || ''}')`;
+  el.querySelector('.card-img').style.backgroundImage = `url('${(l.images && l.images[0]) || ''}')`;
   el.querySelector('.card-title').textContent = l.title;
   el.querySelector('.card-meta').textContent = `${l.propertyType} • ${l.city}, ${l.country} • Owner: ${l.ownerUid.slice(0,6)}…`;
   el.querySelector('.card-price').textContent = currencyFmt(l.price, l.currency) + (l.type==='rent'?' / mo':'');
@@ -45,21 +26,34 @@ function makeCard(doc) {
   el.querySelector('.approve').onclick = ()=> setStatus(l.id,'approved');
   el.querySelector('.reject').onclick = ()=> setStatus(l.id,'rejected');
   el.querySelector('.remove').onclick = ()=> removeListing(l.id);
-
   return el;
 }
 
 async function setStatus(id, status) {
   if (!confirm(`Set status to ${status}?`)) return;
-  await firebase.firestore().collection('listings').doc(id).update({
-    status, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
+  await updateDoc(doc(db, 'listings', id), { status, updatedAt: serverTimestamp() });
   load();
 }
 async function removeListing(id) {
   if (!confirm('Remove permanently?')) return;
-  await firebase.firestore().collection('listings').doc(id).delete();
+  await deleteDoc(doc(db, 'listings', id));
   load();
+}
+
+async function load() {
+  await requireAdmin();
+
+  // Pending
+  pendingDiv.innerHTML = '';
+  let snap = await getDocs(query(collection(db,'listings'), where('status','==','pending'), orderBy('createdAt','desc')));
+  if (snap.empty) pendingDiv.innerHTML = '<p>No pending items.</p>';
+  else for (const d of snap.docs) pendingDiv.appendChild(makeCard({id:d.id, ...d.data()}));
+
+  // Approved
+  approvedDiv.innerHTML = '';
+  snap = await getDocs(query(collection(db,'listings'), where('status','==','approved'), orderBy('createdAt','desc')));
+  if (snap.empty) approvedDiv.innerHTML = '<p>No approved items.</p>';
+  else for (const d of snap.docs) approvedDiv.appendChild(makeCard({id:d.id, ...d.data()}));
 }
 
 load();
