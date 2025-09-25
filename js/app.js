@@ -1,13 +1,13 @@
-// js/app.js  (Firebase v10+ modular, CDN-friendly)
+// js/app.js  (Firebase v10 modular)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
   getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, collection, query, where, orderBy, limit, getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 
-// --- Firebase init (your config) ---
+// --- Firebase init (your provided config) ---
 const firebaseConfig = {
   apiKey: "AIzaSyBA_hgPBgcwrkQJdxhIYFKd8GzmFee_l-I",
   authDomain: "affordable-properties.firebaseapp.com",
@@ -29,59 +29,54 @@ const navAdmin = document.getElementById('nav-admin');
 const yearSpan = document.getElementById('year');
 if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
-// Set brand name to “Affordable Properties”
+// Brand
 const brandAnchor = document.querySelector('.brand a');
 if (brandAnchor) brandAnchor.textContent = 'Affordable Properties';
 
-// --- Login / Logout ---
+// --- Buttons ---
 if (loginBtn) {
   loginBtn.onclick = async () => {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (e) {
-      alert(e.message);
+      alert('Login error: ' + e.message);
+      console.error(e);
     }
   };
 }
-if (logoutBtn) {
-  logoutBtn.onclick = () => signOut(auth);
-}
+if (logoutBtn) logoutBtn.onclick = () => signOut(auth);
 
-// --- Auth state & Admin link toggle ---
+// --- Auth state ---
 onAuthStateChanged(auth, async (user) => {
   const loggedIn = !!user;
-  loginBtn && loginBtn.classList.toggle('hide', loggedIn);
-  logoutBtn && logoutBtn.classList.toggle('hide', !loggedIn);
-  navDashboard && navDashboard.classList.toggle('hide', !loggedIn);
-
-  // Hide admin by default
-  if (navAdmin) navAdmin.classList.add('hide');
+  if (loginBtn) loginBtn.classList.toggle('hide', loggedIn);
+  if (logoutBtn) logoutBtn.classList.toggle('hide', !loggedIn);
+  if (navDashboard) navDashboard.classList.toggle('hide', !loggedIn);
+  if (navAdmin) navAdmin.classList.add('hide'); // hide by default
 
   if (user) {
     try {
       const roleSnap = await getDoc(doc(db, 'roles', user.uid));
       const isAdmin = roleSnap.exists() && roleSnap.data().role === 'admin';
       if (isAdmin && navAdmin) navAdmin.classList.remove('hide');
-    } catch (_) {}
+    } catch (err) { console.warn('Role check failed', err); }
   }
 });
 
 // -------- Helpers (exported) --------
 export async function getApprovedListings(filters = {}) {
-  // Build Firestore query for approved listings
-  let q = query(
+  // Base query: approved, newest first
+  const q = query(
     collection(db, 'listings'),
     where('status', '==', 'approved'),
     orderBy('createdAt', 'desc'),
     limit(100)
   );
-
-  // Firestore can add more where() but you need composite indexes for some combos.
-  // For simplicity, we’ll filter some client-side after fetching.
   const snap = await getDocs(q);
   let items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
+  // Client filter (simpler than composite indexes for MVP)
   if (filters.type) items = items.filter(x => x.type === filters.type);
   if (filters.propertyType) items = items.filter(x => x.propertyType === filters.propertyType);
   if (filters.city) items = items.filter(x => (x.city || '').toLowerCase() === filters.city.toLowerCase());
@@ -94,9 +89,7 @@ export async function getApprovedListings(filters = {}) {
 export function currencyFmt(value, code = 'MUR') {
   try {
     return new Intl.NumberFormat(undefined, { style: 'currency', currency: code, maximumFractionDigits: 0 }).format(value);
-  } catch {
-    return `${value} ${code}`;
-  }
+  } catch { return `${value} ${code}`; }
 }
 export function listingLink(id) { return `listing.html?id=${encodeURIComponent(id)}`; }
 export function firstImage(listing) { return (listing.images && listing.images[0]) || ''; }
@@ -115,5 +108,4 @@ export async function requireAuth() {
   });
 }
 
-// (Optional) expose for other scripts if you need direct access
 export { auth, db };
