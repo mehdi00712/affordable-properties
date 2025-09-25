@@ -1,5 +1,10 @@
-import { requireAuth, currencyFmt } from './app.js';
+import { requireAuth, currencyFmt, auth, db } from './app.js';
 import { uploadFilesToCloudinary } from './cloudinary.js';
+import {
+  collection, query, where, orderBy, getDocs, doc, addDoc, updateDoc, deleteDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
 const form = document.getElementById('listingForm');
 const previewDiv = document.getElementById('preview');
@@ -24,16 +29,22 @@ async function init() {
   currentUser = await requireAuth();
   loadMyListings();
 }
+init();
 
 async function loadMyListings() {
   myListingsDiv.innerHTML = '';
-  const db = firebase.firestore();
-  const snap = await db.collection('listings').where('ownerUid','==', currentUser.uid).orderBy('createdAt','desc').get();
+  const q = query(
+    collection(db, 'listings'),
+    where('ownerUid','==', currentUser.uid),
+    orderBy('createdAt','desc')
+  );
+  const snap = await getDocs(q);
   if (snap.empty) { myListingsDiv.innerHTML = '<p>No listings yet.</p>'; return; }
+
   for (const d of snap.docs) {
     const l = {id:d.id, ...d.data()};
     const card = tpl.content.firstElementChild.cloneNode(true);
-    card.querySelector('.card-img').style.backgroundImage = `url('${l.images?.[0] || ''}')`;
+    card.querySelector('.card-img').style.backgroundImage = `url('${(l.images && l.images[0]) || ''}')`;
     card.querySelector('.card-title').textContent = l.title;
     card.querySelector('.card-meta').textContent = `${l.propertyType} • ${l.city}, ${l.country}`;
     card.querySelector('.card-price').textContent = currencyFmt(l.price, l.currency) + (l.type==='rent'?' / mo':'');
@@ -46,12 +57,12 @@ async function loadMyListings() {
 
 async function deleteListing(id) {
   if (!confirm('Delete this listing?')) return;
-  await firebase.firestore().collection('listings').doc(id).delete();
+  await deleteDoc(doc(db, 'listings', id));
   loadMyListings();
 }
 
 function editListing(l) {
-  // Prefill quick edit by reusing the form
+  form.dataset.editing = l.id;
   document.getElementById('title').value = l.title;
   document.getElementById('type').value = l.type;
   document.getElementById('propertyType').value = l.propertyType;
@@ -67,14 +78,11 @@ function editListing(l) {
   document.getElementById('contactName').value = l.ownerContact?.name || '';
   document.getElementById('contactPhone').value = l.ownerContact?.phone || '';
   document.getElementById('contactEmail').value = l.ownerContact?.email || '';
-
-  form.dataset.editing = l.id; // mark editing
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
 form.addEventListener('submit', async (e)=>{
   e.preventDefault();
-  const db = firebase.firestore();
 
   const data = {
     title: document.getElementById('title').value.trim(),
@@ -96,30 +104,30 @@ form.addEventListener('submit', async (e)=>{
       email: document.getElementById('contactEmail').value.trim(),
     },
     status: 'pending',
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: serverTimestamp(),
   };
 
-  // Upload images if new ones selected
+  // Image uploads (if any selected)
   let uploaded = [];
   if (selectedFiles.length) {
     try {
       uploaded = await uploadFilesToCloudinary(selectedFiles);
     } catch (e) {
-      alert('Image upload failed: ' + e.message); return;
+      alert('Image upload failed: ' + e.message);
+      return;
     }
   }
 
   if (form.dataset.editing) {
     const id = form.dataset.editing;
-    // Owner updates are allowed; status won't change per rules
     if (uploaded.length) data.images = uploaded;
-    await db.collection('listings').doc(id).update(data);
+    await updateDoc(doc(db, 'listings', id), data);
     form.dataset.editing = '';
     alert('Updated. Pending re-review.');
   } else {
     data.images = uploaded;
-    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-    await db.collection('listings').add(data);
+    data.createdAt = serverTimestamp();
+    await addDoc(collection(db, 'listings'), data);
     alert('Submitted. An admin will approve it soon.');
   }
 
@@ -128,5 +136,3 @@ form.addEventListener('submit', async (e)=>{
   selectedFiles = [];
   loadMyListings();
 });
-
-init();
