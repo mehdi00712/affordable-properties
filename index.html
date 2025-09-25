@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>HabitatHub – Find Properties</title>
+  <link rel="stylesheet" href="style.css"/>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <header class="nav">
+    <div class="brand"><a href="./">HabitatHub</a></div>
+    <nav>
+      <a href="dashboard.html" id="nav-dashboard" class="hide">Dashboard</a>
+      <a href="admin.html" id="nav-admin" class="hide">Admin</a>
+      <button id="btn-login">Login</button>
+      <button id="btn-logout" class="hide">Logout</button>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h1>Find affordable properties</h1>
+    <p>Rent or buy apartments, houses, villas and more.</p>
+    <form id="searchForm" class="filters">
+      <select id="filterType">
+        <option value="">Rent or Buy</option>
+        <option value="rent">Rent</option>
+        <option value="sale">Buy</option>
+      </select>
+      <select id="filterPropertyType">
+        <option value="">Property type</option>
+        <option>apartment</option><option>house</option><option>villa</option><option>studio</option>
+      </select>
+      <input id="filterCity" placeholder="City (e.g., Dubai, Port Louis)"/>
+      <input id="minPrice" type="number" placeholder="Min price"/>
+      <input id="maxPrice" type="number" placeholder="Max price"/>
+      <button type="submit">Search</button>
+    </form>
+  </section>
+
+  <main class="grid" id="listingsGrid"></main>
+
+  <template id="cardTpl">
+    <a class="card" href="#">
+      <div class="card-img"></div>
+      <div class="card-body">
+        <h3 class="card-title"></h3>
+        <p class="card-meta"></p>
+        <p class="card-price"></p>
+      </div>
+    </a>
+  </template>
+
+  <footer class="footer">© <span id="year"></span> HabitatHub</footer>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/listings.js"></script>
+</body>
+</html>
