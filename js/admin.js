@@ -1,4 +1,4 @@
-import { requireAuth, db, currencyFmt } from './app.js';
+import { requireAuth, db, currencyFmt, SUPER_ADMIN_UID } from './app.js';
 import {
   collection, query, where, orderBy, getDocs,
   doc, updateDoc, deleteDoc, serverTimestamp, getDoc
@@ -8,12 +8,11 @@ const pendingDiv = document.getElementById('pending');
 const approvedDiv = document.getElementById('approved');
 const tpl = document.getElementById('adminCardTpl');
 
-// Gate: must be admin
-async function requireAdmin() {
+// Only the super-admin can access this page
+async function requireSuperAdmin() {
   const user = await requireAuth();
-  const roleSnap = await getDoc(doc(db,'roles',user.uid));
-  if (!roleSnap.exists() || roleSnap.data().role !== 'admin') {
-    alert('Admins only'); location.href='./'; throw new Error('Not admin');
+  if (user.uid !== SUPER_ADMIN_UID) {
+    alert('Admins only'); location.href = './'; throw new Error('Not super-admin');
   }
 }
 
@@ -41,7 +40,7 @@ async function removeListing(id){
 }
 
 async function load(){
-  await requireAdmin();
+  await requireSuperAdmin();
 
   // Pending
   pendingDiv.innerHTML = '';
