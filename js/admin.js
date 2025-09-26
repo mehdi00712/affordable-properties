@@ -1,59 +1,59 @@
-import { requireAuth, auth, db, currencyFmt } from './app.js';
+import { requireAuth, db, currencyFmt } from './app.js';
 import {
-  collection, query, where, orderBy, getDocs, doc, updateDoc, deleteDoc, serverTimestamp
+  collection, query, where, orderBy, getDocs,
+  doc, updateDoc, deleteDoc, serverTimestamp, getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-import { getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const pendingDiv = document.getElementById('pending');
 const approvedDiv = document.getElementById('approved');
 const tpl = document.getElementById('adminCardTpl');
 
+// Gate: must be admin
 async function requireAdmin() {
   const user = await requireAuth();
-  const roleSnap = await getDoc(doc(db, 'roles', user.uid));
+  const roleSnap = await getDoc(doc(db,'roles',user.uid));
   if (!roleSnap.exists() || roleSnap.data().role !== 'admin') {
-    alert('Admins only'); location.href = './'; throw new Error('Not admin');
+    alert('Admins only'); location.href='./'; throw new Error('Not admin');
   }
 }
 
-function makeCard(l) {
+function card(l){
   const el = tpl.content.firstElementChild.cloneNode(true);
-  el.querySelector('.card-img').style.backgroundImage = `url('${(l.images && l.images[0]) || ''}')`;
+  el.querySelector('.card-img').style.backgroundImage = `url('${(l.images&&l.images[0])||''}')`;
   el.querySelector('.card-title').textContent = l.title;
   el.querySelector('.card-meta').textContent = `${l.propertyType} • ${l.city}, ${l.country} • Owner: ${l.ownerUid.slice(0,6)}…`;
   el.querySelector('.card-price').textContent = currencyFmt(l.price, l.currency) + (l.type==='rent'?' / mo':'');
-
   el.querySelector('.approve').onclick = ()=> setStatus(l.id,'approved');
   el.querySelector('.reject').onclick = ()=> setStatus(l.id,'rejected');
   el.querySelector('.remove').onclick = ()=> removeListing(l.id);
   return el;
 }
 
-async function setStatus(id, status) {
-  if (!confirm(`Set status to ${status}?`)) return;
-  await updateDoc(doc(db, 'listings', id), { status, updatedAt: serverTimestamp() });
+async function setStatus(id,status){
+  if(!confirm(`Set status to ${status}?`)) return;
+  await updateDoc(doc(db,'listings',id), { status, updatedAt: serverTimestamp() });
   load();
 }
-async function removeListing(id) {
-  if (!confirm('Remove permanently?')) return;
-  await deleteDoc(doc(db, 'listings', id));
+async function removeListing(id){
+  if(!confirm('Remove permanently?')) return;
+  await deleteDoc(doc(db,'listings',id));
   load();
 }
 
-async function load() {
+async function load(){
   await requireAdmin();
 
   // Pending
   pendingDiv.innerHTML = '';
   let snap = await getDocs(query(collection(db,'listings'), where('status','==','pending'), orderBy('createdAt','desc')));
   if (snap.empty) pendingDiv.innerHTML = '<p>No pending items.</p>';
-  else for (const d of snap.docs) pendingDiv.appendChild(makeCard({id:d.id, ...d.data()}));
+  else for (const d of snap.docs) pendingDiv.appendChild(card({id:d.id, ...d.data()}));
 
   // Approved
   approvedDiv.innerHTML = '';
   snap = await getDocs(query(collection(db,'listings'), where('status','==','approved'), orderBy('createdAt','desc')));
   if (snap.empty) approvedDiv.innerHTML = '<p>No approved items.</p>';
-  else for (const d of snap.docs) approvedDiv.appendChild(makeCard({id:d.id, ...d.data()}));
+  else for (const d of snap.docs) approvedDiv.appendChild(card({id:d.id, ...d.data()}));
 }
 
 load();
