@@ -2,17 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Listing – Affordable Properties</title>
+  <title>Listing – etoile property</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 <header class="topbar">
-  <div class="brand"><a href="./" class="logo">rightmove-ish</a></div>
+  <div class="brand"><a href="./" class="logo"><img src="etoile.jpg" alt="etoile property" /></a></div>
   <nav class="menu"><a href="./?type=sale">Buy</a><a href="./?type=rent">Rent</a></nav>
   <div class="auth">
     <a id="nav-dashboard" class="btn ghost hide" href="dashboard.html">Post a property</a>
     <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
     <button id="btn-login" class="btn pill">Sign in</button>
+    <button id="btn-signup" class="btn pill">Sign up</button>
     <button id="btn-logout" class="btn pill hide">Logout</button>
   </div>
 </header>
@@ -30,7 +31,7 @@
   </div>
 </main>
 
-<!-- Auth modal (same structure, reused by app.js) -->
+<!-- Auth modal -->
 <div id="authModal" class="modal hide">
   <div class="modal-dialog">
     <button class="modal-close" id="closeAuth">×</button>
