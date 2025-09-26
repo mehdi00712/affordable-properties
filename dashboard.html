@@ -1,69 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Dashboard – Affordable Properties</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-<header class="nav">
-  <div class="brand"><a href="./">Affordable Properties</a></div>
-  <nav class="nav-right">
-    <a href="admin.html" id="nav-admin" class="hide">Admin</a>
-    <button id="btn-logout">Logout</button>
-  </nav>
+<header class="topbar">
+  <div class="brand"><a href="./" class="logo">rightmove-ish</a></div>
+  <nav class="menu"><a href="./?type=sale">Buy</a><a href="./?type=rent">Rent</a></nav>
+  <div class="auth">
+    <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
+    <button id="btn-logout" class="btn pill">Logout</button>
+  </div>
 </header>
 
-<main class="container">
-  <h1>Post a new listing</h1>
-  <form id="listingForm" class="form">
-    <div class="row">
-      <select id="type" required>
-        <option value="">Rent or Sale</option><option value="rent">Rent</option><option value="sale">Sale</option>
-      </select>
-      <select id="propertyType" required>
-        <option value="">Property type</option>
-        <option>apartment</option><option>house</option><option>villa</option><option>studio</option>
-      </select>
-      <select id="currency"><option>MUR</option><option>AED</option><option>USD</option></select>
-    </div>
+<main class="wrap">
+  <h1>Post a property</h1>
+  <div class="panel">
+    <form id="listingForm" class="form">
+      <div class="grid-3">
+        <select id="type" required>
+          <option value="">Rent or Sale</option><option value="rent">Rent</option><option value="sale">Sale</option>
+        </select>
+        <select id="propertyType" required>
+          <option value="">Property type</option><option>apartment</option><option>house</option><option>villa</option><option>studio</option>
+        </select>
+        <select id="currency"><option>MUR</option><option>AED</option><option>USD</option></select>
+      </div>
 
-    <div class="row">
-      <input id="title" placeholder="Listing title" required/>
-      <input id="price" type="number" placeholder="Price" required/>
-      <input id="sizeSqm" type="number" min="0" placeholder="Size (sqm)"/>
-    </div>
+      <div class="grid-3">
+        <input id="title" placeholder="Listing title" required/>
+        <input id="price" type="number" placeholder="Price" required/>
+        <input id="sizeSqm" type="number" min="0" placeholder="Size (sqm)"/>
+      </div>
 
-    <div class="row">
-      <input id="bedrooms" type="number" min="0" placeholder="Bedrooms"/>
-      <input id="bathrooms" type="number" min="0" placeholder="Bathrooms"/>
-      <input id="location" placeholder="Area / Street"/>
-    </div>
+      <div class="grid-3">
+        <input id="bedrooms" type="number" min="0" placeholder="Bedrooms"/>
+        <input id="bathrooms" type="number" min="0" placeholder="Bathrooms"/>
+        <input id="location" placeholder="Area / Street"/>
+      </div>
 
-    <div class="row">
-      <input id="city" placeholder="City" required/>
-      <input id="country" placeholder="Country" required/>
-      <input id="contactPhone" placeholder="Phone" required/>
-    </div>
+      <div class="grid-3">
+        <input id="city" placeholder="City" required/>
+        <input id="country" placeholder="Country" required/>
+        <input id="contactPhone" placeholder="Phone" required/>
+      </div>
 
-    <textarea id="description" placeholder="Description" rows="5" required></textarea>
+      <textarea id="description" rows="5" placeholder="Description" required></textarea>
 
-    <fieldset>
-      <legend>Images</legend>
-      <input type="file" id="imagesInput" accept="image/*" multiple/>
-      <div id="preview" class="preview"></div>
-    </fieldset>
+      <fieldset class="fs">
+        <legend>Images</legend>
+        <input type="file" id="imagesInput" accept="image/*" multiple/>
+        <div id="preview" class="preview"></div>
+      </fieldset>
 
-    <fieldset>
-      <legend>Contact</legend>
-      <input id="contactName" placeholder="Your name" required/>
-      <input id="contactEmail" type="email" placeholder="Email" required/>
-    </fieldset>
+      <fieldset class="fs">
+        <legend>Contact</legend>
+        <div class="grid-2">
+          <input id="contactName" placeholder="Your name" required/>
+          <input id="contactEmail" type="email" placeholder="Email" required/>
+        </div>
+      </fieldset>
 
-    <button type="submit">Submit for approval</button>
-  </form>
+      <button type="submit" class="btn primary">Submit for approval</button>
+    </form>
+  </div>
 
-  <h2>Your listings</h2>
+  <h2 class="section-title">Your listings</h2>
   <div id="myListings" class="grid"></div>
 </main>
 
@@ -76,8 +80,8 @@
       <p class="card-price"></p>
       <p class="badge"></p>
       <div class="actions">
-        <button class="edit">Edit</button>
-        <button class="delete outline">Delete</button>
+        <button class="btn small">Edit</button>
+        <button class="btn outline small delete">Delete</button>
       </div>
     </div>
   </div>
@@ -85,6 +89,6 @@
 
 <script type="module" src="js/app.js"></script>
 <script type="module" src="js/cloudinary.js"></script>
-<script type="module" src="js/dashboard.js"></script>
+script type="module" src="js/dashboard.js"></script>
 </body>
 </html>
