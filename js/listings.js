@@ -1,15 +1,20 @@
-import { getApprovedListings, currencyFmt, listingLink, firstImage } from './app.js';
+import { getApprovedListings, listingLink, firstImage, currencyFmt } from './app.js';
 
 const grid = document.getElementById('listingsGrid');
-const cardTpl = document.getElementById('cardTpl');
-const form = document.getElementById('searchForm');
+const tpl = document.getElementById('cardTpl');
+
+// Hero quick search
+const bigSearch = document.getElementById('bigSearch');
+const qCity = document.getElementById('qCity');
+
+function readMode(){ const sale = document.getElementById('sale'); return sale?.checked ? 'sale' : 'rent'; }
 
 async function render(filters = {}) {
   grid.innerHTML = '';
   const items = await getApprovedListings(filters);
-  if (!items.length) { grid.innerHTML = '<p style="padding:8px 16px">No results.</p>'; return; }
-  for (const it of items) {
-    const a = cardTpl.content.firstElementChild.cloneNode(true);
+  if (!items.length){ grid.innerHTML = '<p class="muted" style="padding:8px 16px">No results.</p>'; return; }
+  for (const it of items){
+    const a = tpl.content.firstElementChild.cloneNode(true);
     a.href = listingLink(it.id);
     a.querySelector('.card-img').style.backgroundImage = `url('${firstImage(it)}')`;
     a.querySelector('.card-title').textContent = it.title;
@@ -19,15 +24,12 @@ async function render(filters = {}) {
   }
 }
 
-form.addEventListener('submit', (e)=>{
+bigSearch?.addEventListener('submit', (e)=>{
   e.preventDefault();
-  render({
-    type: document.getElementById('filterType').value,
-    propertyType: document.getElementById('filterPropertyType').value,
-    city: document.getElementById('filterCity').value.trim(),
-    minPrice: document.getElementById('minPrice').value,
-    maxPrice: document.getElementById('maxPrice').value,
-  });
+  render({ city: qCity.value.trim(), type: readMode() });
 });
 
-render();
+// Querystring support (?type=sale)
+const params = new URLSearchParams(location.search);
+const type = params.get('type');
+render({ type: (type==='rent' || type==='sale') ? type : undefined });
