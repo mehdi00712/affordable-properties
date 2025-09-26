@@ -1,4 +1,4 @@
-// Firebase v10 modular, open signup/signin, super-admin gating
+// Firebase modular: open signup/signin, super-admin gating, modal UI
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
   getAuth, setPersistence, browserSessionPersistence,
@@ -24,15 +24,16 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 await setPersistence(auth, browserSessionPersistence);
 
-// Nav refs
+// Nav
 const loginBtn = document.getElementById('btn-login');
 const signupBtn = document.getElementById('btn-signup');
+const openAuthBtn = document.getElementById('btn-open-auth');
 const logoutBtn = document.getElementById('btn-logout');
 const navDashboard = document.getElementById('nav-dashboard');
 const navAdmin = document.getElementById('nav-admin');
 const yearSpan = document.getElementById('year'); if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
-// Modal refs
+// Auth modal
 const modal = document.getElementById('authModal');
 const closeAuth = document.getElementById('closeAuth');
 const loginForm = document.getElementById('emailLoginForm');
@@ -42,11 +43,11 @@ const loginPassword = document.getElementById('loginPassword');
 const signupEmail = document.getElementById('signupEmail');
 const signupPassword = document.getElementById('signupPassword');
 
-// Open modal
 function openModal(){ modal?.classList.remove('hide'); }
 function closeModal(){ modal?.classList.add('hide'); }
 loginBtn?.addEventListener('click', openModal);
 signupBtn?.addEventListener('click', openModal);
+openAuthBtn?.addEventListener('click', openModal);
 closeAuth?.addEventListener('click', closeModal);
 
 // Sign in
@@ -74,7 +75,7 @@ logoutBtn?.addEventListener('click', async ()=>{
   openModal();
 });
 
-// Auth state -> show links
+// Auth state
 onAuthStateChanged(auth, (user)=>{
   const loggedIn = !!user;
   loginBtn && loginBtn.classList.toggle('hide', loggedIn);
@@ -87,6 +88,7 @@ onAuthStateChanged(auth, (user)=>{
   }
 });
 
+// Helpers
 export async function getApprovedListings(filters={}){
   const q = query(
     collection(db,'listings'),
