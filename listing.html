@@ -1,38 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Listing – Affordable Properties</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-<header class="nav">
-  <div class="brand"><a href="./">Affordable Properties</a></div>
-  <nav class="nav-right">
-    <a href="dashboard.html" id="nav-dashboard" class="hide">Dashboard</a>
-    <a href="admin.html" id="nav-admin" class="hide">Admin</a>
-    <form id="emailLoginForm" class="inline-login hide">
-      <input id="loginEmail" type="email" placeholder="email@example.com" required />
-      <input id="loginPassword" type="password" placeholder="Password" required />
-      <button type="submit">Sign in</button>
-    </form>
-    <button id="btn-login">Login</button>
-    <button id="btn-logout" class="hide">Logout</button>
-  </nav>
+<header class="topbar">
+  <div class="brand"><a href="./" class="logo">rightmove-ish</a></div>
+  <nav class="menu"><a href="./?type=sale">Buy</a><a href="./?type=rent">Rent</a></nav>
+  <div class="auth">
+    <a id="nav-dashboard" class="btn ghost hide" href="dashboard.html">Post a property</a>
+    <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
+    <button id="btn-login" class="btn pill">Sign in</button>
+    <button id="btn-logout" class="btn pill hide">Logout</button>
+  </div>
 </header>
 
-<main class="container">
+<main class="wrap">
   <div id="gallery" class="gallery"></div>
   <h1 id="title"></h1>
-  <p id="meta"></p>
-  <h2 id="price"></h2>
+  <p id="meta" class="muted"></p>
+  <h2 id="price" class="price"></h2>
   <p id="desc"></p>
-  <div class="contact">
+  <div class="panel">
     <h3>Contact seller</h3>
-    <p id="contact"></p>
-    <button id="btn-report">Report this listing</button>
+    <p id="contact" class="muted"></p>
+    <button id="btn-report" class="btn outline small">Report this listing</button>
   </div>
 </main>
+
+<!-- Auth modal (same structure, reused by app.js) -->
+<div id="authModal" class="modal hide">
+  <div class="modal-dialog">
+    <button class="modal-close" id="closeAuth">×</button>
+    <h3 class="modal-title">Sign in</h3>
+    <form id="emailLoginForm" class="stack">
+      <input id="loginEmail" type="email" placeholder="you@example.com" required />
+      <input id="loginPassword" type="password" placeholder="Password" required />
+      <button type="submit" class="btn primary">Sign in</button>
+    </form>
+    <hr/>
+    <h3 class="modal-title">Create account</h3>
+    <form id="emailSignupForm" class="stack">
+      <input id="signupEmail" type="email" placeholder="newuser@example.com" required />
+      <input id="signupPassword" type="password" placeholder="Password (min 6)" required />
+      <button type="submit" class="btn">Sign up</button>
+    </form>
+  </div>
+</div>
 
 <script type="module" src="js/app.js"></script>
 <script type="module" src="js/listing-page.js"></script>
