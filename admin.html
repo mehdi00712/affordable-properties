@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Admin – Affordable Properties</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-<header class="nav">
-  <div class="brand"><a href="./">Affordable Properties</a></div>
-  <nav class="nav-right"><button id="btn-logout">Logout</button></nav>
+<header class="topbar">
+  <div class="brand"><a href="./" class="logo">rightmove-ish</a></div>
+  <nav class="menu"><a href="./?type=sale">Buy</a><a href="./?type=rent">Rent</a></nav>
+  <div class="auth"><button id="btn-logout" class="btn pill">Logout</button></div>
 </header>
 
-<main class="container">
+<main class="wrap">
   <h1>Moderation</h1>
-  <h2>Pending listings</h2>
+  <h2 class="section-title">Pending</h2>
   <div id="pending" class="grid"></div>
-  <h2>Approved listings</h2>
+  <h2 class="section-title">Approved</h2>
   <div id="approved" class="grid"></div>
 </main>
 
@@ -27,9 +28,9 @@
       <p class="card-meta"></p>
       <p class="card-price"></p>
       <div class="actions">
-        <button class="approve">Approve</button>
-        <button class="reject outline">Reject</button>
-        <button class="remove danger">Remove</button>
+        <button class="btn small approve">Approve</button>
+        <button class="btn outline small reject">Reject</button>
+        <button class="btn danger small remove">Remove</button>
       </div>
     </div>
   </div>
