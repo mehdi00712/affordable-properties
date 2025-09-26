@@ -2,11 +2,8 @@ import { getApprovedListings, listingLink, firstImage, currencyFmt } from './app
 
 const grid = document.getElementById('listingsGrid');
 const tpl = document.getElementById('cardTpl');
-
-// Hero quick search
 const bigSearch = document.getElementById('bigSearch');
 const qCity = document.getElementById('qCity');
-
 function readMode(){ const sale = document.getElementById('sale'); return sale?.checked ? 'sale' : 'rent'; }
 
 async function render(filters = {}) {
@@ -29,7 +26,7 @@ bigSearch?.addEventListener('submit', (e)=>{
   render({ city: qCity.value.trim(), type: readMode() });
 });
 
-// Querystring support (?type=sale)
+// support querystring ?type=rent|sale
 const params = new URLSearchParams(location.search);
 const type = params.get('type');
-render({ type: (type==='rent' || type==='sale') ? type : undefined });
+render({ type: (type==='rent'||type==='sale')?type:undefined });
