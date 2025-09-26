@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Affordable Properties – Buy & Rent</title>
+  <title>etoile property – Buy & Rent</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 <header class="topbar">
   <div class="brand">
-    <a href="./" class="logo">rightmove-ish</a>
+    <a href="./" class="logo"><img src="etoile.jpg" alt="etoile property" /></a>
   </div>
   <nav class="menu">
     <a href="./?type=sale">Buy</a>
@@ -24,6 +24,7 @@
     <a id="nav-dashboard" class="btn ghost hide" href="dashboard.html">Post a property</a>
     <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
     <button id="btn-login" class="btn pill">Sign in</button>
+    <button id="btn-signup" class="btn pill">Sign up</button>
     <button id="btn-logout" class="btn pill hide">Logout</button>
   </div>
 </header>
@@ -42,7 +43,7 @@
         <input type="radio" name="mode" id="rent" value="rent">
         <label for="rent">To rent</label>
       </div>
-      <button class="btn primary">Search</button>
+      <button class="btn primary" type="submit">Search</button>
     </form>
 
     <div class="hint">
@@ -51,7 +52,7 @@
         <p>Save properties, create alerts and keep track of enquiries.</p>
       </div>
       <div>
-        <button id="btn-signup" class="btn outline small">Sign in or create an account</button>
+        <button id="btn-open-auth" class="btn outline small">Sign in or create an account</button>
       </div>
     </div>
   </div>
@@ -73,9 +74,9 @@
   </a>
 </template>
 
-<footer class="footer">© <span id="year"></span> Affordable Properties</footer>
+<footer class="footer">© <span id="year"></span> etoile property</footer>
 
-<!-- Auth modal -->
+<!-- Auth modal (login + signup) -->
 <div id="authModal" class="modal hide">
   <div class="modal-dialog">
     <button class="modal-close" id="closeAuth">×</button>
