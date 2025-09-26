@@ -8,9 +8,14 @@
 <body>
 <header class="nav">
   <div class="brand"><a href="./">Affordable Properties</a></div>
-  <nav>
+  <nav class="nav-right">
     <a href="dashboard.html" id="nav-dashboard" class="hide">Dashboard</a>
     <a href="admin.html" id="nav-admin" class="hide">Admin</a>
+    <form id="emailLoginForm" class="inline-login hide">
+      <input id="loginEmail" type="email" placeholder="email@example.com" required />
+      <input id="loginPassword" type="password" placeholder="Password" required />
+      <button type="submit">Sign in</button>
+    </form>
     <button id="btn-login">Login</button>
     <button id="btn-logout" class="hide">Logout</button>
   </nav>
