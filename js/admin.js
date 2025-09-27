@@ -1,6 +1,6 @@
 import { requireAuth, db, currencyFmt, SUPER_ADMIN_UID } from './app.js';
 import {
-  collection, query, where, orderBy, getDocs,
+  collection, query, where, getDocs,
   doc, updateDoc, deleteDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
@@ -29,10 +29,21 @@ async function removeListing(id){ if(!confirm('Remove permanently?'))return; awa
 
 async function load(){
   await requireSuperAdmin();
-  pendingDiv.innerHTML=''; approvedDiv.innerHTML='';
-  let snap = await getDocs(query(collection(db,'listings'), where('status','==','pending'), orderBy('createdAt','desc')));
-  if (snap.empty) pendingDiv.innerHTML='<p class="muted">No pending items.</p>'; else for (const d of snap.docs) pendingDiv.appendChild(card({id:d.id,...d.data()}));
-  snap = await getDocs(query(collection(db,'listings'), where('status','==','approved'), orderBy('createdAt','desc')));
-  if (snap.empty) approvedDiv.innerHTML='<p class="muted">No approved items.</p>'; else for (const d of snap.docs) approvedDiv.appendChild(card({id:d.id,...d.data()}));
+
+  // Pending (no orderBy; sort client-side)
+  pendingDiv.innerHTML='';
+  let snap = await getDocs(query(collection(db,'listings'), where('status','==','pending')));
+  let items = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  items.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+  if (!items.length) pendingDiv.innerHTML='<p class="muted">No pending items.</p>';
+  else for (const it of items) pendingDiv.appendChild(card(it));
+
+  // Approved (no orderBy; sort client-side)
+  approvedDiv.innerHTML='';
+  snap = await getDocs(query(collection(db,'listings'), where('status','==','approved')));
+  items = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  items.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+  if (!items.length) approvedDiv.innerHTML='<p class="muted">No approved items.</p>';
+  else for (const it of items) approvedDiv.appendChild(card(it));
 }
 load();
