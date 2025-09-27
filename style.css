@@ -120,7 +120,7 @@ a{color:inherit;text-decoration:none}
   margin-left: auto;
 }
 
-/* Mobile menu behavior */
+/* Nav links in hamburger on mobile */
 @media (max-width: 768px){
   .hamburger { display: block; }
 
@@ -134,8 +134,14 @@ a{color:inherit;text-decoration:none}
     flex-direction: column;
     gap: 12px;
     padding: 12px;
-    min-width: 180px;
+    min-width: 200px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 1000;
   }
   .menu.show { display: flex; }
+
+  .menu .btn {
+    width: 100%;
+    text-align: center;
+  }
 }
