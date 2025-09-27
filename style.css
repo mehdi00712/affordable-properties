@@ -109,3 +109,33 @@ a{color:inherit;text-decoration:none}
 @media (max-width: 480px){
   .modal-dialog{ width: calc(100vw - 24px); }
 }
+
+/* Hamburger base */
+.hamburger {
+  display: none;
+  font-size: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+/* Mobile menu behavior */
+@media (max-width: 768px){
+  .hamburger { display: block; }
+
+  .menu {
+    display: none;
+    position: absolute;
+    top: 60px; right: 16px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    min-width: 180px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .menu.show { display: flex; }
+}
