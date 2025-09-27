@@ -16,7 +16,7 @@ console.info("Cloudinary configured:", cloudinaryReady());
 let currentUser; 
 let selectedFiles = [];
 
-// Grab inputs explicitly (IDs don't become globals in modules)
+// Explicit inputs (IDs don't auto-become globals in modules)
 const titleInput        = document.getElementById('title');
 const typeInput         = document.getElementById('type');
 const propertyTypeInput = document.getElementById('propertyType');
@@ -51,17 +51,9 @@ filesInput.addEventListener('change', e=>{
 async function loadMyListings(){
   myListingsDiv.innerHTML = '';
   try{
-    // No orderBy -> no composite index needed; sort client-side
-    const snap = await getDocs(query(
-      collection(db,'listings'),
-      where('ownerUid','==',currentUser.uid)
-    ));
+    const snap = await getDocs(query(collection(db,'listings'), where('ownerUid','==',currentUser.uid)));
     let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    docs.sort((a,b)=>{
-      const ta = a.createdAt?.seconds || 0;
-      const tb = b.createdAt?.seconds || 0;
-      return tb - ta; // newest first
-    });
+    docs.sort((a,b)=> (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
 
     if (!docs.length){ myListingsDiv.innerHTML = '<p class="muted">No listings yet.</p>'; return; }
 
