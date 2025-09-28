@@ -1,114 +1,166 @@
 // js/dashboard.js
 import { requireAuth, currencyFmt, db } from './app.js';
+import { uploadFilesToCloudinary, cloudinaryReady } from './cloudinary.js';
 import {
   collection, query, where, getDocs, doc, addDoc, updateDoc, deleteDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-document.addEventListener('DOMContentLoaded', () => start());
+const form = document.getElementById('listingForm');
+const previewDiv = document.getElementById('preview');
+const filesInput = document.getElementById('imagesInput');
+const myListingsDiv = document.getElementById('myListings');
+const tpl = document.getElementById('myCardTpl');
 
-async function start(){
-  const user = await requireAuth();
+console.info("Cloudinary configured:", cloudinaryReady());
 
-  const form = document.getElementById('listingForm');
-  const myListingsDiv = document.getElementById('myListings');
-  const tpl = document.getElementById('myCardTpl');
-  if (!form || !myListingsDiv){ alert('dashboard.html missing required elements'); return; }
+let currentUser; 
+let selectedFiles = [];
 
-  await loadMyListings();
+// Explicit inputs (IDs don't auto-become globals in modules)
+const titleInput        = document.getElementById('title');
+const typeInput         = document.getElementById('type');
+const propertyTypeInput = document.getElementById('propertyType');
+const priceInput        = document.getElementById('price');
+const currencyInput     = document.getElementById('currency');
+const bedroomsInput     = document.getElementById('bedrooms');
+const bathroomsInput    = document.getElementById('bathrooms');
+const sizeSqmInput      = document.getElementById('sizeSqm');
+const cityInput         = document.getElementById('city');
+const countryInput      = document.getElementById('country');
+const locationInput     = document.getElementById('location');
+const descriptionInput  = document.getElementById('description');
+const contactNameInput  = document.getElementById('contactName');
+const contactPhoneInput = document.getElementById('contactPhone');
+const contactEmailInput = document.getElementById('contactEmail');
 
-  form.addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    const btn = form.querySelector('button[type="submit"]');
-    btn && (btn.disabled = true, btn.textContent = 'Submitting…');
-
-    const v = id => (document.getElementById(id)?.value || '').trim();
-    const data = {
-      title: v('title'),
-      type: v('type'),
-      propertyType: v('propertyType'),
-      price: Number(v('price')),
-      currency: v('currency') || 'MUR',
-      bedrooms: Number(v('bedrooms') || 0),
-      bathrooms: Number(v('bathrooms') || 0),
-      sizeSqm: Number(v('sizeSqm') || 0),
-      city: v('city'),
-      country: v('country'),
-      location: v('location'),
-      description: v('description'),
-      ownerUid: user.uid,
-      ownerContact: { name: v('contactName'), phone: v('contactPhone'), email: v('contactEmail') },
-      locationLat: Number(v('lat')),
-      locationLng: Number(v('lng')),
-      images: [],
-      status: 'pending',
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    };
-
-    const required = ['title','type','propertyType','price','city','country'];
-    const missing = required.filter(k => !data[k]);
-    if (missing.length){ alert('Please fill: ' + missing.join(', ')); btn && (btn.disabled=false, btn.textContent='Submit for approval'); return; }
-
-    try {
-      if (form.dataset.editing){
-        await updateDoc(doc(db,'listings', form.dataset.editing), data);
-        form.dataset.editing = '';
-        alert('Updated. Pending re-review.');
-      } else {
-        const ref = await addDoc(collection(db,'listings'), data);
-        alert('Submitted. Awaiting admin approval. id='+ref.id);
-      }
-      form.reset();
-      await loadMyListings();
-    } catch (err){
-      console.error('[dashboard] write failed', err);
-      alert('Could not submit: ' + (err.code || err.message));
-    } finally {
-      btn && (btn.disabled=false, btn.textContent='Submit for approval');
-    }
+filesInput.addEventListener('change', e=>{
+  selectedFiles = Array.from(e.target.files || []);
+  previewDiv.innerHTML = '';
+  selectedFiles.forEach(f=>{
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(f);
+    previewDiv.appendChild(img);
   });
+});
 
-  async function loadMyListings(){
-    myListingsDiv.innerHTML = '';
-    try{
-      const snap = await getDocs(query(collection(db,'listings'), where('ownerUid','==', user.uid)));
-      const items = snap.docs.map(d=>({id:d.id, ...d.data()}))
-        .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+(async function init(){
+  currentUser = await requireAuth();
+  await loadMyListings();
+})();
 
-      if (!items.length){ myListingsDiv.innerHTML = '<p class="muted">No listings yet.</p>'; return; }
+async function loadMyListings(){
+  myListingsDiv.innerHTML = '';
+  try{
+    const snap = await getDocs(query(collection(db,'listings'), where('ownerUid','==',currentUser.uid)));
+    let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    docs.sort((a,b)=> (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
 
-      for (const l of items){
-        const el = tpl?.content?.firstElementChild?.cloneNode(true) ?? simpleCard();
-        const img   = el.querySelector('.card-img');
-        const title = el.querySelector('.card-title');
-        const meta  = el.querySelector('.card-meta');
-        const price = el.querySelector('.card-price');
-        const badge = el.querySelector('.badge');
+    if (!docs.length){ myListingsDiv.innerHTML = '<p class="muted">No listings yet.</p>'; return; }
 
-        if (img)   img.style.backgroundImage = `url('${(l.images && l.images[0]) || ''}')`;
-        if (title) title.textContent = l.title || '(untitled)';
-        if (meta)  meta.textContent  = `${l.propertyType||'-'} • ${l.city||'-'}, ${l.country||'-'}`;
-        if (price) price.textContent = currencyFmt(l.price, l.currency) + (l.type==='rent'?' / mo':'');
-        if (badge) badge.textContent = `Status: ${l.status}`;
-
-        myListingsDiv.appendChild(el);
-      }
-    }catch(err){
-      console.error('[dashboard] loadMyListings failed', err);
-      myListingsDiv.innerHTML = `<p class="alert error">Cannot load your listings: ${err.code || err.message}</p>`;
+    for (const l of docs){
+      const card = tpl.content.firstElementChild.cloneNode(true);
+      card.querySelector('.card-img').style.backgroundImage = `url('${(l.images&&l.images[0])||''}')`;
+      card.querySelector('.card-title').textContent = l.title;
+      card.querySelector('.card-meta').textContent = `${l.propertyType} • ${l.city}, ${l.country}`;
+      card.querySelector('.card-price').textContent = currencyFmt(l.price, l.currency) + (l.type==='rent'?' / mo':'');
+      card.querySelector('.badge').textContent = `Status: ${l.status}`;
+      card.querySelector('.actions .btn').onclick = ()=> editListing(l);
+      card.querySelector('.actions .delete').onclick = ()=> deleteListing(l.id);
+      myListingsDiv.appendChild(card);
     }
-  }
-
-  function simpleCard(){
-    const d = document.createElement('div');
-    d.className = 'card';
-    d.innerHTML = `
-      <div class="card-body">
-        <h3 class="card-title"></h3>
-        <p class="card-meta"></p>
-        <p class="card-price"></p>
-        <p class="badge"></p>
-      </div>`;
-    return d;
+  }catch(err){
+    console.error(err);
+    myListingsDiv.innerHTML = `<p class="muted">Could not load your listings: ${err.message}</p>`;
   }
 }
+
+async function deleteListing(id){
+  if (!confirm('Delete this listing?')) return;
+  await deleteDoc(doc(db,'listings',id));
+  loadMyListings();
+}
+
+function editListing(l){
+  form.dataset.editing = l.id;
+  titleInput.value        = l.title ?? '';
+  typeInput.value         = l.type ?? '';
+  propertyTypeInput.value = l.propertyType ?? '';
+  priceInput.value        = l.price ?? '';
+  currencyInput.value     = l.currency ?? 'MUR';
+  bedroomsInput.value     = l.bedrooms ?? '';
+  bathroomsInput.value    = l.bathrooms ?? '';
+  sizeSqmInput.value      = l.sizeSqm ?? '';
+  cityInput.value         = l.city ?? '';
+  countryInput.value      = l.country ?? '';
+  locationInput.value     = l.location ?? '';
+  descriptionInput.value  = l.description ?? '';
+  contactNameInput.value  = l.ownerContact?.name  ?? '';
+  contactPhoneInput.value = l.ownerContact?.phone ?? '';
+  contactEmailInput.value = l.ownerContact?.email ?? '';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+form.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const submitBtn = form.querySelector('button[type="submit"]');
+  submitBtn.disabled = true; submitBtn.textContent = 'Submitting...';
+
+  try{
+    const data = {
+      title: titleInput.value.trim(),
+      type: typeInput.value,
+      propertyType: propertyTypeInput.value,
+      price: Number(priceInput.value),
+      currency: currencyInput.value,
+      bedrooms: Number(bedroomsInput.value || 0),
+      bathrooms: Number(bathroomsInput.value || 0),
+      sizeSqm: Number(sizeSqmInput.value || 0),
+      city: cityInput.value.trim(),
+      country: countryInput.value.trim(),
+      location: locationInput.value.trim(),
+      description: descriptionInput.value.trim(),
+      ownerUid: currentUser.uid,
+      ownerContact: {
+        name:  contactNameInput.value.trim(),
+        phone: contactPhoneInput.value.trim(),
+        email: contactEmailInput.value.trim(),
+      },
+      status: 'pending',
+      updatedAt: serverTimestamp()
+    };
+
+    if (!data.title || !data.type || !data.propertyType || !data.city || !data.country || !data.price) {
+      throw new Error('Please fill in all required fields.');
+    }
+
+    // Upload images (optional)
+    let uploaded = [];
+    if (selectedFiles.length){
+      uploaded = await uploadFilesToCloudinary(selectedFiles);
+    }
+
+    if (form.dataset.editing) {
+      const id = form.dataset.editing;
+      if (uploaded.length) data.images = uploaded;
+      await updateDoc(doc(db,'listings',id), data);
+      form.dataset.editing = '';
+      alert('Updated. Pending re-review by admin.');
+    } else {
+      data.images = uploaded;
+      data.createdAt = serverTimestamp();
+      await addDoc(collection(db,'listings'), data);
+      alert('Submitted. Awaiting admin approval.');
+    }
+
+    form.reset();
+    previewDiv.innerHTML = '';
+    selectedFiles = [];
+    await loadMyListings();
+
+  } catch (err){
+    console.error(err);
+    alert(`Could not submit:\n${err.message}`);
+  } finally {
+    submitBtn.disabled = false; submitBtn.textContent = 'Submit for approval';
+  }
+});
