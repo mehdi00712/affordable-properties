@@ -1,5 +1,5 @@
 // js/app.js
-// Firebase modular: open signup/signin, super-admin gating, modal UI + mobile hamburger
+// Firebase modular: auth UI + helpers + hamburger (no Firestore indexes needed)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
   getAuth, setPersistence, browserSessionPersistence,
@@ -7,7 +7,7 @@ import {
   onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
-  getFirestore, collection, query, where, orderBy, limit, getDocs
+  getFirestore, collection, query, where, getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 export const SUPER_ADMIN_UID = "WxvIqW6fmMVz2Us8AQBO9htcaAT2";
@@ -92,34 +92,25 @@ onAuthStateChanged(auth, (user)=>{
 // --- Hamburger menu (mobile) ---
 const hamburgerBtn = document.getElementById('hamburgerBtn');
 const navMenu = document.getElementById('navMenu');
-
 function closeMenu(){ navMenu?.classList.remove('show'); }
-hamburgerBtn?.addEventListener('click', (e)=>{
-  e.stopPropagation();
-  navMenu?.classList.toggle('show');
-});
-navMenu?.addEventListener('click', (e)=>{
-  // Close when a link inside the menu is tapped
-  if (e.target.closest('a')) closeMenu();
-});
+hamburgerBtn?.addEventListener('click', (e)=>{ e.stopPropagation(); navMenu?.classList.toggle('show'); });
+navMenu?.addEventListener('click', (e)=>{ if (e.target.closest('a')) closeMenu(); });
 document.addEventListener('click', (e)=>{
-  // Click outside closes menu on mobile
   if (!navMenu?.classList.contains('show')) return;
   const insideMenu = navMenu.contains(e.target);
   const isButton = hamburgerBtn && hamburgerBtn.contains(e.target);
   if (!insideMenu && !isButton) closeMenu();
 });
 
-// --- Helpers used by other pages ---
-export async function getApprovedListings(filters={}){
-  const q = query(
-    collection(db,'listings'),
-    where('status','==','approved'),
-    orderBy('createdAt','desc'),
-    limit(100)
-  );
+// --- Helpers (no index required) ---
+export async function getApprovedListings(filters = {}){
+  // No orderBy in query -> no index required. Sort client-side.
+  const q = query(collection(db,'listings'), where('status','==','approved'));
   const snap = await getDocs(q);
   let items = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  // sort by createdAt desc if present
+  items.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+
   if (filters.type) items = items.filter(x => x.type === filters.type);
   if (filters.propertyType) items = items.filter(x => x.propertyType === filters.propertyType);
   if (filters.city) items = items.filter(x => (x.city||'').toLowerCase() === filters.city.toLowerCase());
