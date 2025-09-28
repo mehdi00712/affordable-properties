@@ -21,7 +21,8 @@
 </header>
 
 <main class="wrap">
-  <!-- Debug panel will be injected here -->
+  <div id="admin-debug" class="panel" style="margin:12px 0 16px;padding:12px;border:1px solid #eee;border-radius:12px"></div>
+
   <h1>Moderation</h1>
 
   <h2 class="section-title">Pending</h2>
@@ -31,7 +32,6 @@
   <div id="approved" class="grid"></div>
 </main>
 
-<!-- Template MUST exist -->
 <template id="adminCardTpl">
   <div class="card">
     <div class="card-img"></div>
@@ -50,8 +50,7 @@
 
 <footer class="footer">© <span id="year"></span> etoile property</footer>
 
-<!-- Scripts LAST; add query strings to bust cache -->
-<script type="module" src="js/app.js?v=3"></script>
-<script type="module" src="js/admin.js?v=3"></script>
+<script type="module" src="js/app.js?v=4"></script>
+<script type="module" src="js/admin.js?v=4"></script>
 </body>
 </html>
