@@ -4,15 +4,20 @@
   <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Dashboard – etoile property</title>
   <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 </head>
 <body>
 <header class="topbar">
   <div class="brand"><a href="./" class="logo"><img src="etoile.jpg" alt="etoile property" /></a></div>
-  <nav class="menu"><a href="./?type=sale">Buy</a><a href="./?type=rent">Rent</a></nav>
-  <div class="auth">
+  <button class="hamburger" id="hamburgerBtn">☰</button>
+  <nav class="menu" id="navMenu">
+    <a href="./?type=sale">Buy</a>
+    <a href="./?type=rent">Rent</a>
+    <hr/>
     <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
     <button id="btn-logout" class="btn pill">Logout</button>
-  </div>
+  </nav>
+  <div id="userChip" class="user-chip"><div id="avatar" class="avatar">?</div><span id="authStatus" class="muted">Logged in</span></div>
 </header>
 
 <main class="wrap">
@@ -24,7 +29,7 @@
           <option value="">Rent or Sale</option><option value="rent">Rent</option><option value="sale">Sale</option>
         </select>
         <select id="propertyType" required>
-          <option value="">Property type</option><option>apartment</option><option>house</option><option>villa</option><option>studio</option>
+          <option value="">Property type</option><option>apartment</option><option>house</option><option>villa</option><option>studio</option><option>commercial</option>
         </select>
         <select id="currency"><option>MUR</option><option>AED</option><option>USD</option></select>
       </div>
@@ -63,6 +68,17 @@
         </div>
       </fieldset>
 
+      <!-- Optional pin on map -->
+      <fieldset class="fs">
+        <legend>Location</legend>
+        <div id="pickMap" style="height:280px;border-radius:12px;overflow:hidden;margin-bottom:8px"></div>
+        <div class="grid-2">
+          <input id="lat" placeholder="Latitude" required />
+          <input id="lng" placeholder="Longitude" required />
+        </div>
+        <p class="muted" style="margin:6px 0 0">Drag the pin or edit the numbers.</p>
+      </fieldset>
+
       <button type="submit" class="btn primary">Submit for approval</button>
     </form>
   </div>
@@ -87,8 +103,10 @@
   </div>
 </template>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module" src="js/app.js"></script>
 <script type="module" src="js/cloudinary.js"></script>
+<script type="module" src="js/map-picker.js"></script>
 <script type="module" src="js/dashboard.js"></script>
 </body>
 </html>
