@@ -53,7 +53,7 @@ async function init(){
   const latInput          = document.getElementById('lat');
   const lngInput          = document.getElementById('lng');
 
-  function myCard(l){
+  function myCard(){
     if (tpl && tpl.content && tpl.content.firstElementChild){
       return tpl.content.firstElementChild.cloneNode(true);
     }
@@ -75,16 +75,21 @@ async function init(){
     return el;
   }
 
-  filesInput && filesInput.addEventListener('change', e=>{
-    selectedFiles = Array.from(e.target.files || []);
-    if (previewDiv){ previewDiv.innerHTML=''; }
-    selectedFiles.forEach(f=>{
-      if (!previewDiv) return;
-      const img = document.createElement('img');
-      img.src = URL.createObjectURL(f);
-      previewDiv.appendChild(img);
+  // Files preview (safe binding)
+  if (filesInput){
+    filesInput.addEventListener('change', e=>{
+      selectedFiles = Array.from(e.target.files || []);
+      if (previewDiv) previewDiv.innerHTML = '';
+      selectedFiles.forEach(f=>{
+        if (!previewDiv) return;
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(f);
+        previewDiv.appendChild(img);
+      });
     });
-  });
+  } else {
+    console.warn('[dashboard] #imagesInput not found — skipping file preview binding.');
+  }
 
   await loadMyListings();
 
@@ -98,7 +103,7 @@ async function init(){
       if (!docs.length){ myListingsDiv.innerHTML = '<p class="muted">No listings yet.</p>'; return; }
 
       for (const l of docs){
-        const card = myCard(l);
+        const card = myCard();
         const imgEl = card.querySelector('.card-img');
         const titleEl = card.querySelector('.card-title');
         const metaEl = card.querySelector('.card-meta');
