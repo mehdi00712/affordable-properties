@@ -8,8 +8,14 @@
 <body>
 <header class="topbar">
   <div class="brand"><a href="./" class="logo"><img src="etoile.jpg" alt="etoile property" /></a></div>
-  <nav class="menu"><a href="./?type=sale">Buy</a><a href="./?type=rent">Rent</a></nav>
-  <div class="auth"><button id="btn-logout" class="btn pill">Logout</button></div>
+  <button class="hamburger" id="hamburgerBtn">☰</button>
+  <nav class="menu" id="navMenu">
+    <a href="./?type=sale">Buy</a>
+    <a href="./?type=rent">Rent</a>
+    <hr/>
+    <button id="btn-logout" class="btn pill">Logout</button>
+  </nav>
+  <div id="userChip" class="user-chip"><div id="avatar" class="avatar">?</div><span id="authStatus" class="muted">Logged in</span></div>
 </header>
 
 <main class="wrap">
@@ -35,6 +41,8 @@
     </div>
   </div>
 </template>
+
+<footer class="footer">© <span id="year"></span> etoile property</footer>
 
 <script type="module" src="js/app.js"></script>
 <script type="module" src="js/admin.js"></script>
