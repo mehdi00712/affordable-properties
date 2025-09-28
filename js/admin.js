@@ -30,7 +30,7 @@ async function removeListing(id){ if(!confirm('Remove permanently?'))return; awa
 async function load(){
   await requireSuperAdmin();
 
-  // Pending (no orderBy; sort client-side)
+  // Pending
   pendingDiv.innerHTML='';
   let snap = await getDocs(query(collection(db,'listings'), where('status','==','pending')));
   let items = snap.docs.map(d=>({id:d.id, ...d.data()}));
@@ -38,7 +38,7 @@ async function load(){
   if (!items.length) pendingDiv.innerHTML='<p class="muted">No pending items.</p>';
   else for (const it of items) pendingDiv.appendChild(card(it));
 
-  // Approved (no orderBy; sort client-side)
+  // Approved
   approvedDiv.innerHTML='';
   snap = await getDocs(query(collection(db,'listings'), where('status','==','approved')));
   items = snap.docs.map(d=>({id:d.id, ...d.data()}));
