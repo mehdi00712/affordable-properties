@@ -1,4 +1,4 @@
-// js/admin.js (diagnostic v3)
+// js/admin.js (v4: start immediately if DOM is already ready)
 import { requireAuth, db, currencyFmt, SUPER_ADMIN_UID } from './app.js';
 import {
   collection, query, where, getDocs, limit,
@@ -6,14 +6,6 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 console.log('[admin] script loaded');
-
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('[admin] DOM ready');
-  start().catch(err => {
-    console.error('[admin] boot failed:', err);
-    showDebug(`<div class="alert error">Admin failed to start: ${err.message}</div>`);
-  });
-});
 
 function showDebug(html){
   let box = document.getElementById('admin-debug');
@@ -42,9 +34,9 @@ function setLine(id, text, cls=''){
 }
 
 async function start(){
+  console.log('[admin] start() called');
   const user = await requireAuth();
 
-  // Header info
   showDebug(`
     <strong>Admin debug</strong>
     <div id="dbg-user"></div>
@@ -55,16 +47,18 @@ async function start(){
     <div id="dbg-approved"></div>
   `);
   setLine('dbg-user', `Signed in as: <code>${user.email || '(no email)'}</code>`);
-  setLine('dbg-uid',  `UID: <code>${user.uid}</code> (expected super admin: <code>${SUPER_ADMIN_UID}</code>)`);
+  setLine('dbg-uid',  `UID: <code>${user.uid}</code> (expected: <code>${SUPER_ADMIN_UID}</code>)`);
 
   if (user.uid !== SUPER_ADMIN_UID){
-    setLine('dbg-admin', `<span class="alert error">You are NOT the super admin. You cannot see pending.</span>`, 'alert error');
-    alert('Admins only'); window.location.href = './'; return;
+    setLine('dbg-admin', `<span class="alert error">You are NOT the super admin. Redirecting…</span>`, 'alert error');
+    alert('Admins only');
+    window.location.href = './';
+    return;
   } else {
     setLine('dbg-admin', `<span class="alert success">Super admin verified.</span>`, 'alert success');
   }
 
-  // Can we read anything at all?
+  // sanity: can we read anything at all?
   try {
     const testSnap = await getDocs(query(collection(db,'listings'), limit(3)));
     setLine('dbg-count', `Plain read OK. First 3 docs: ${testSnap.size}`);
@@ -99,7 +93,6 @@ function makeCardElement(){
     </div>`;
   return wrap;
 }
-
 function toCard(l){
   const el = makeCardElement();
   const img   = el.querySelector('.card-img');
@@ -127,7 +120,6 @@ async function loadBuckets(){
   const approvedDiv = document.getElementById('approved');
   pendingDiv.innerHTML = ''; approvedDiv.innerHTML = '';
 
-  // Pending
   try {
     const qP = query(collection(db,'listings'), where('status','==','pending'));
     const sP = await getDocs(qP);
@@ -142,7 +134,6 @@ async function loadBuckets(){
     pendingDiv.innerHTML = '<p class="muted">Cannot load pending.</p>';
   }
 
-  // Approved
   try {
     const qA = query(collection(db,'listings'), where('status','==','approved'));
     const sA = await getDocs(qA);
@@ -167,4 +158,21 @@ async function removeListing(id){
   if (!confirm('Remove permanently?')) return;
   await deleteDoc(doc(db,'listings',id));
   await loadBuckets();
+}
+
+// ---- Start immediately if DOM is already ready; otherwise wait ----
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('[admin] DOM ready (listener)');
+    start().catch(e => {
+      console.error('[admin] start failed (listener)', e);
+      showDebug(`<div class="alert error">Start failed: ${e.message}</div>`);
+    });
+  });
+} else {
+  console.log('[admin] DOM already ready -> starting now');
+  start().catch(e => {
+    console.error('[admin] start failed (immediate)', e);
+    showDebug(`<div class="alert error">Start failed: ${e.message}</div>`);
+  });
 }
