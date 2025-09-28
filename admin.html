@@ -8,12 +8,14 @@
 <body>
 <header class="topbar">
   <div class="brand"><a href="./" class="logo"><img src="etoile.jpg" alt="etoile property" /></a></div>
-  <button class="hamburger" id="hamburgerBtn">☰</button>
+  <button class="hamburger" id="hamburgerBtn" type="button">☰</button>
   <nav class="menu" id="navMenu">
     <a href="./?type=sale">Buy</a>
     <a href="./?type=rent">Rent</a>
     <hr/>
-    <button id="btn-logout" class="btn pill">Logout</button>
+    <button id="btn-login"  class="btn pill hide" type="button">Sign in</button>
+    <button id="btn-signup" class="btn pill hide" type="button">Sign up</button>
+    <button id="btn-logout" class="btn pill" type="button">Logout</button>
   </nav>
   <div id="userChip" class="user-chip"><div id="avatar" class="avatar">?</div><span id="authStatus" class="muted">Logged in</span></div>
 </header>
@@ -34,9 +36,9 @@
       <p class="card-meta"></p>
       <p class="card-price"></p>
       <div class="actions">
-        <button class="btn small approve">Approve</button>
-        <button class="btn outline small reject">Reject</button>
-        <button class="btn danger small remove">Remove</button>
+        <button class="btn small approve" type="button">Approve</button>
+        <button class="btn outline small reject" type="button">Reject</button>
+        <button class="btn danger small remove" type="button">Remove</button>
       </div>
     </div>
   </div>
