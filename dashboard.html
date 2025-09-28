@@ -4,7 +4,6 @@
   <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Dashboard – etoile property</title>
   <link rel="stylesheet" href="style.css"/>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 </head>
 <body>
 <header class="topbar">
@@ -57,12 +56,6 @@
       <textarea id="description" rows="5" placeholder="Description" required></textarea>
 
       <fieldset class="fs">
-        <legend>Images</legend>
-        <input type="file" id="imagesInput" accept="image/*" multiple/>
-        <div id="preview" class="preview"></div>
-      </fieldset>
-
-      <fieldset class="fs">
         <legend>Contact</legend>
         <div class="grid-2">
           <input id="contactName" placeholder="Your name" required/>
@@ -71,13 +64,11 @@
       </fieldset>
 
       <fieldset class="fs">
-        <legend>Location</legend>
-        <div id="pickMap" style="height:280px;border-radius:12px;overflow:hidden;margin-bottom:8px"></div>
+        <legend>Location (optional coordinates)</legend>
         <div class="grid-2">
-          <input id="lat" placeholder="Latitude" required />
-          <input id="lng" placeholder="Longitude" required />
+          <input id="lat" placeholder="Latitude" />
+          <input id="lng" placeholder="Longitude" />
         </div>
-        <p class="muted" style="margin:6px 0 0">Drag the pin or edit the numbers.</p>
       </fieldset>
 
       <button type="submit" class="btn primary">Submit for approval</button>
@@ -104,11 +95,9 @@
   </div>
 </template>
 
-<!-- Scripts LAST and in this order -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script type="module" src="js/app.js"></script>
-<script type="module" src="js/cloudinary.js"></script>
-<script type="module" src="js/map-picker.js"></script>
-<script type="module" src="js/dashboard.js"></script>
+<footer class="footer">© <span id="year"></span> etoile property</footer>
+
+<script type="module" src="js/app.js?v=4"></script>
+<script type="module" src="js/dashboard.js?v=4"></script>
 </body>
 </html>
