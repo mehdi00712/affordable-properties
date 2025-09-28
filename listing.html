@@ -8,16 +8,16 @@
 <body>
 <header class="topbar">
   <div class="brand"><a href="./" class="logo"><img src="etoile.jpg" alt="etoile property" /></a></div>
-  <button class="hamburger" id="hamburgerBtn">☰</button>
+  <button class="hamburger" id="hamburgerBtn" type="button">☰</button>
   <nav class="menu" id="navMenu">
     <a href="./?type=sale">Buy</a>
     <a href="./?type=rent">Rent</a>
     <hr/>
     <a id="nav-dashboard" class="btn ghost hide" href="dashboard.html">Post a property</a>
     <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
-    <button id="btn-login" class="btn pill">Sign in</button>
-    <button id="btn-signup" class="btn pill">Sign up</button>
-    <button id="btn-logout" class="btn pill hide">Logout</button>
+    <button id="btn-login"  class="btn pill" type="button">Sign in</button>
+    <button id="btn-signup" class="btn pill" type="button">Sign up</button>
+    <button id="btn-logout" class="btn pill hide" type="button">Logout</button>
   </nav>
   <div id="userChip" class="user-chip"><div id="avatar" class="avatar">?</div><span id="authStatus" class="muted">Logged out</span></div>
 </header>
@@ -31,14 +31,14 @@
   <div class="panel">
     <h3>Contact seller</h3>
     <p id="contact" class="muted"></p>
-    <button id="btn-report" class="btn outline small">Report this listing</button>
+    <button id="btn-report" class="btn outline small" type="button">Report this listing</button>
   </div>
 </main>
 
-<!-- Auth modal (same as index) -->
+<!-- Auth modal -->
 <div id="authModal" class="modal hide">
   <div class="modal-dialog">
-    <button class="modal-close" id="closeAuth">×</button>
+    <button class="modal-close" id="closeAuth" type="button">×</button>
     <h3 class="modal-title">Sign in</h3>
     <form id="emailLoginForm" class="stack">
       <input id="loginEmail" type="email" placeholder="you@example.com" required />
