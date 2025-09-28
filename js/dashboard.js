@@ -1,4 +1,3 @@
-// js/dashboard.js
 import { requireAuth, currencyFmt, db } from './app.js';
 import { uploadFilesToCloudinary, cloudinaryReady } from './cloudinary.js';
 import {
@@ -16,7 +15,7 @@ console.info("Cloudinary configured:", cloudinaryReady());
 let currentUser; 
 let selectedFiles = [];
 
-// Explicit inputs (IDs don't auto-become globals in modules)
+// explicit inputs
 const titleInput        = document.getElementById('title');
 const typeInput         = document.getElementById('type');
 const propertyTypeInput = document.getElementById('propertyType');
@@ -32,6 +31,8 @@ const descriptionInput  = document.getElementById('description');
 const contactNameInput  = document.getElementById('contactName');
 const contactPhoneInput = document.getElementById('contactPhone');
 const contactEmailInput = document.getElementById('contactEmail');
+const latInput          = document.getElementById('lat');
+const lngInput          = document.getElementById('lng');
 
 filesInput.addEventListener('change', e=>{
   selectedFiles = Array.from(e.target.files || []);
@@ -54,7 +55,6 @@ async function loadMyListings(){
     const snap = await getDocs(query(collection(db,'listings'), where('ownerUid','==',currentUser.uid)));
     let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     docs.sort((a,b)=> (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
-
     if (!docs.length){ myListingsDiv.innerHTML = '<p class="muted">No listings yet.</p>'; return; }
 
     for (const l of docs){
@@ -97,6 +97,8 @@ function editListing(l){
   contactNameInput.value  = l.ownerContact?.name  ?? '';
   contactPhoneInput.value = l.ownerContact?.phone ?? '';
   contactEmailInput.value = l.ownerContact?.email ?? '';
+  latInput.value          = l.locationLat ?? '';
+  lngInput.value          = l.locationLng ?? '';
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -125,6 +127,8 @@ form.addEventListener('submit', async (e)=>{
         phone: contactPhoneInput.value.trim(),
         email: contactEmailInput.value.trim(),
       },
+      locationLat: Number(latInput.value),
+      locationLng: Number(lngInput.value),
       status: 'pending',
       updatedAt: serverTimestamp()
     };
@@ -133,7 +137,6 @@ form.addEventListener('submit', async (e)=>{
       throw new Error('Please fill in all required fields.');
     }
 
-    // Upload images (optional)
     let uploaded = [];
     if (selectedFiles.length){
       uploaded = await uploadFilesToCloudinary(selectedFiles);
