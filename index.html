@@ -5,25 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>etoile property – Buy & Rent</title>
   <link rel="stylesheet" href="style.css"/>
+
+  <!-- Map CSS (for draw-your-area; safe to include always) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"/>
 </head>
 <body>
 <header class="topbar">
   <div class="brand">
-    <a href="./" class="logo">
-      <img src="etoile.jpg" alt="etoile property" />
-    </a>
+    <a href="./" class="logo"><img src="etoile.jpg" alt="etoile property" /></a>
   </div>
 
-  <!-- Hamburger button (mobile only) -->
+  <!-- Hamburger (mobile) -->
   <button class="hamburger" id="hamburgerBtn">☰</button>
 
-  <!-- Full nav menu (all links go here) -->
+  <!-- One menu with EVERYTHING so it collapses on mobile -->
   <nav class="menu" id="navMenu">
     <a href="./?type=sale">Buy</a>
     <a href="./?type=rent">Rent</a>
     <a href="#" class="muted">House Prices</a>
     <a href="#" class="muted">Find Agent</a>
-    <a href="#" class="muted">Commercial</a>
+    <a href="./?propertyType=commercial">Commercial</a>
     <a href="#" class="muted">Expat Approved</a>
     <a href="#" class="muted">Overseas</a>
     <hr/>
@@ -33,6 +35,12 @@
     <button id="btn-signup" class="btn pill">Sign up</button>
     <button id="btn-logout" class="btn pill hide">Logout</button>
   </nav>
+
+  <!-- User chip (status) -->
+  <div id="userChip" class="user-chip">
+    <div id="avatar" class="avatar">?</div>
+    <span id="authStatus" class="muted">Logged out</span>
+  </div>
 </header>
 
 <section class="hero">
@@ -50,9 +58,11 @@
         <label for="rent">To rent</label>
       </div>
       <button class="btn primary" type="submit">Search</button>
+      <button id="btn-draw" class="btn outline" type="button">Draw on map</button>
     </form>
 
-    <div class="hint">
+    <!-- Hint card hides when logged-in -->
+    <div id="signinHint" class="hint">
       <div>
         <h3>Sign in to streamline your search</h3>
         <p>Save properties, create alerts and keep track of enquiries.</p>
@@ -80,9 +90,27 @@
   </a>
 </template>
 
-<footer class="footer">© <span id="year"></span> etoile property</footer>
+<!-- Footer: Rightmove-style links -->
+<footer class="footer">
+  <nav class="footer-links">
+    <a href="#">Site map</a><span class="sep">|</span>
+    <a href="#">Help</a><span class="sep">|</span>
+    <a href="#">Cookies</a><span class="sep">|</span>
+    <a href="#">Safety and Security</a><span class="sep">|</span>
+    <a href="#">Terms of Use</a><span class="sep">|</span>
+    <a href="#">Privacy Policy</a>
+  </nav>
+  <div class="footer-social">
+    <a href="#" aria-label="Facebook">f</a>
+    <a href="#" aria-label="X">x</a>
+    <a href="#" aria-label="Instagram">◎</a>
+    <a href="#" aria-label="TikTok">♪</a>
+    <a href="#" aria-label="YouTube">▶</a>
+  </div>
+  <p class="copyright">© <span id="year"></span> etoile property</p>
+</footer>
 
-<!-- Auth modal (login + signup) -->
+<!-- Auth modal -->
 <div id="authModal" class="modal hide">
   <div class="modal-dialog">
     <button class="modal-close" id="closeAuth">×</button>
@@ -102,7 +130,26 @@
   </div>
 </div>
 
+<!-- Map Search modal -->
+<div id="mapModal" class="modal hide">
+  <div class="modal-dialog" style="width:min(880px,96vw);">
+    <button class="modal-close" id="closeMap">×</button>
+    <h3 class="modal-title">Draw your search area</h3>
+    <div id="mapSearch" style="height:420px;border-radius:12px;overflow:hidden;margin:8px 0;"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button id="btn-clear-shape" class="btn">Clear</button>
+      <button id="btn-apply-shape" class="btn primary">Apply filter</button>
+    </div>
+  </div>
+</div>
+
+<!-- Map JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+
 <script type="module" src="js/app.js"></script>
 <script type="module" src="js/listings.js"></script>
+<script type="module" src="js/map-search.js"></script>
+<script type="module" src="js/render-helpers.js"></script>
 </body>
 </html>
