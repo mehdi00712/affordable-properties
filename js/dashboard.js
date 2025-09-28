@@ -1,103 +1,114 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Dashboard – etoile property</title>
-  <link rel="stylesheet" href="style.css"/>
-</head>
-<body>
-<header class="topbar">
-  <div class="brand"><a href="./" class="logo"><img src="etoile.jpg" alt="etoile property" /></a></div>
-  <button class="hamburger" id="hamburgerBtn" type="button">☰</button>
-  <nav class="menu" id="navMenu">
-    <a href="./?type=sale">Buy</a>
-    <a href="./?type=rent">Rent</a>
-    <hr/>
-    <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
-    <button id="btn-login"  class="btn pill hide" type="button">Sign in</button>
-    <button id="btn-signup" class="btn pill hide" type="button">Sign up</button>
-    <button id="btn-logout" class="btn pill" type="button">Logout</button>
-  </nav>
-  <div id="userChip" class="user-chip"><div id="avatar" class="avatar">?</div><span id="authStatus" class="muted">Logged in</span></div>
-</header>
+// js/dashboard.js
+import { requireAuth, currencyFmt, db } from './app.js';
+import {
+  collection, query, where, getDocs, doc, addDoc, updateDoc, deleteDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-<main class="wrap">
-  <h1>Post a property</h1>
-  <div class="panel">
-    <form id="listingForm" class="form">
-      <div class="grid-3">
-        <select id="type" required>
-          <option value="">Rent or Sale</option><option value="rent">Rent</option><option value="sale">Sale</option>
-        </select>
-        <select id="propertyType" required>
-          <option value="">Property type</option><option>apartment</option><option>house</option><option>villa</option><option>studio</option><option>commercial</option>
-        </select>
-        <select id="currency"><option>MUR</option><option>AED</option><option>USD</option></select>
-      </div>
+document.addEventListener('DOMContentLoaded', () => start());
 
-      <div class="grid-3">
-        <input id="title" placeholder="Listing title" required/>
-        <input id="price" type="number" placeholder="Price" required/>
-        <input id="sizeSqm" type="number" min="0" placeholder="Size (sqm)"/>
-      </div>
+async function start(){
+  const user = await requireAuth();
 
-      <div class="grid-3">
-        <input id="bedrooms" type="number" min="0" placeholder="Bedrooms"/>
-        <input id="bathrooms" type="number" min="0" placeholder="Bathrooms"/>
-        <input id="location" placeholder="Area / Street"/>
-      </div>
+  const form = document.getElementById('listingForm');
+  const myListingsDiv = document.getElementById('myListings');
+  const tpl = document.getElementById('myCardTpl');
+  if (!form || !myListingsDiv){ alert('dashboard.html missing required elements'); return; }
 
-      <div class="grid-3">
-        <input id="city" placeholder="City" required/>
-        <input id="country" placeholder="Country" required/>
-        <input id="contactPhone" placeholder="Phone" required/>
-      </div>
+  await loadMyListings();
 
-      <textarea id="description" rows="5" placeholder="Description" required></textarea>
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const btn = form.querySelector('button[type="submit"]');
+    btn && (btn.disabled = true, btn.textContent = 'Submitting…');
 
-      <fieldset class="fs">
-        <legend>Contact</legend>
-        <div class="grid-2">
-          <input id="contactName" placeholder="Your name" required/>
-          <input id="contactEmail" type="email" placeholder="Email" required/>
-        </div>
-      </fieldset>
+    const v = id => (document.getElementById(id)?.value || '').trim();
+    const data = {
+      title: v('title'),
+      type: v('type'),
+      propertyType: v('propertyType'),
+      price: Number(v('price')),
+      currency: v('currency') || 'MUR',
+      bedrooms: Number(v('bedrooms') || 0),
+      bathrooms: Number(v('bathrooms') || 0),
+      sizeSqm: Number(v('sizeSqm') || 0),
+      city: v('city'),
+      country: v('country'),
+      location: v('location'),
+      description: v('description'),
+      ownerUid: user.uid,
+      ownerContact: { name: v('contactName'), phone: v('contactPhone'), email: v('contactEmail') },
+      locationLat: Number(v('lat')),
+      locationLng: Number(v('lng')),
+      images: [],
+      status: 'pending',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
 
-      <fieldset class="fs">
-        <legend>Location (optional coordinates)</legend>
-        <div class="grid-2">
-          <input id="lat" placeholder="Latitude" />
-          <input id="lng" placeholder="Longitude" />
-        </div>
-      </fieldset>
+    const required = ['title','type','propertyType','price','city','country'];
+    const missing = required.filter(k => !data[k]);
+    if (missing.length){ alert('Please fill: ' + missing.join(', ')); btn && (btn.disabled=false, btn.textContent='Submit for approval'); return; }
 
-      <button type="submit" class="btn primary">Submit for approval</button>
-    </form>
-  </div>
+    try {
+      if (form.dataset.editing){
+        await updateDoc(doc(db,'listings', form.dataset.editing), data);
+        form.dataset.editing = '';
+        alert('Updated. Pending re-review.');
+      } else {
+        const ref = await addDoc(collection(db,'listings'), data);
+        alert('Submitted. Awaiting admin approval. id='+ref.id);
+      }
+      form.reset();
+      await loadMyListings();
+    } catch (err){
+      console.error('[dashboard] write failed', err);
+      alert('Could not submit: ' + (err.code || err.message));
+    } finally {
+      btn && (btn.disabled=false, btn.textContent='Submit for approval');
+    }
+  });
 
-  <h2 class="section-title">Your listings</h2>
-  <div id="myListings" class="grid"></div>
-</main>
+  async function loadMyListings(){
+    myListingsDiv.innerHTML = '';
+    try{
+      const snap = await getDocs(query(collection(db,'listings'), where('ownerUid','==', user.uid)));
+      const items = snap.docs.map(d=>({id:d.id, ...d.data()}))
+        .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
 
-<template id="myCardTpl">
-  <div class="card">
-    <div class="card-img"></div>
-    <div class="card-body">
-      <h3 class="card-title"></h3>
-      <p class="card-meta"></p>
-      <p class="card-price"></p>
-      <p class="badge"></p>
-      <div class="actions">
-        <button class="btn small" type="button">Edit</button>
-        <button class="btn outline small delete" type="button">Delete</button>
-      </div>
-    </div>
-  </div>
-</template>
+      if (!items.length){ myListingsDiv.innerHTML = '<p class="muted">No listings yet.</p>'; return; }
 
-<footer class="footer">© <span id="year"></span> etoile property</footer>
+      for (const l of items){
+        const el = tpl?.content?.firstElementChild?.cloneNode(true) ?? simpleCard();
+        const img   = el.querySelector('.card-img');
+        const title = el.querySelector('.card-title');
+        const meta  = el.querySelector('.card-meta');
+        const price = el.querySelector('.card-price');
+        const badge = el.querySelector('.badge');
 
-<script type="module" src="js/app.js?v=4"></script>
-<script type="module" src="js/dashboard.js?v=4"></script>
-</body>
-</html>
+        if (img)   img.style.backgroundImage = `url('${(l.images && l.images[0]) || ''}')`;
+        if (title) title.textContent = l.title || '(untitled)';
+        if (meta)  meta.textContent  = `${l.propertyType||'-'} • ${l.city||'-'}, ${l.country||'-'}`;
+        if (price) price.textContent = currencyFmt(l.price, l.currency) + (l.type==='rent'?' / mo':'');
+        if (badge) badge.textContent = `Status: ${l.status}`;
+
+        myListingsDiv.appendChild(el);
+      }
+    }catch(err){
+      console.error('[dashboard] loadMyListings failed', err);
+      myListingsDiv.innerHTML = `<p class="alert error">Cannot load your listings: ${err.code || err.message}</p>`;
+    }
+  }
+
+  function simpleCard(){
+    const d = document.createElement('div');
+    d.className = 'card';
+    d.innerHTML = `
+      <div class="card-body">
+        <h3 class="card-title"></h3>
+        <p class="card-meta"></p>
+        <p class="card-price"></p>
+        <p class="badge"></p>
+      </div>`;
+    return d;
+  }
+}
