@@ -6,7 +6,7 @@
   <title>etoile property – Buy & Rent</title>
   <link rel="stylesheet" href="style.css"/>
 
-  <!-- Map CSS (for draw-your-area) -->
+  <!-- Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"/>
 </head>
@@ -16,10 +16,8 @@
     <a href="./" class="logo"><img src="etoile.jpg" alt="etoile property" /></a>
   </div>
 
-  <!-- Hamburger (mobile) -->
   <button class="hamburger" id="hamburgerBtn" type="button">☰</button>
 
-  <!-- One menu with EVERYTHING so it collapses on mobile -->
   <nav class="menu" id="navMenu">
     <a href="./?type=sale">Buy</a>
     <a href="./?type=rent">Rent</a>
@@ -36,7 +34,6 @@
     <button id="btn-logout" class="btn pill hide" type="button">Logout</button>
   </nav>
 
-  <!-- User chip (status) -->
   <div id="userChip" class="user-chip">
     <div id="avatar" class="avatar">?</div>
     <span id="authStatus" class="muted">Logged out</span>
@@ -61,7 +58,6 @@
       <button id="btn-draw" class="btn outline" type="button">Draw on map</button>
     </form>
 
-    <!-- Hint card hides when logged-in -->
     <div id="signinHint" class="hint">
       <div>
         <h3>Sign in to streamline your search</h3>
@@ -90,7 +86,6 @@
   </a>
 </template>
 
-<!-- Footer: Rightmove-style links -->
 <footer class="footer">
   <nav class="footer-links">
     <a href="#">Site map</a><span class="sep">|</span>
@@ -101,32 +96,31 @@
     <a href="#">Privacy Policy</a>
   </nav>
   <div class="footer-social">
-    <a href="#" aria-label="Facebook">f</a>
-    <a href="#" aria-label="X">x</a>
-    <a href="#" aria-label="Instagram">◎</a>
-    <a href="#" aria-label="TikTok">♪</a>
-    <a href="#" aria-label="YouTube">▶</a>
+    <a href="#">f</a><a href="#">x</a><a href="#">◎</a><a href="#">♪</a><a href="#">▶</a>
   </div>
   <p class="copyright">© <span id="year"></span> etoile property</p>
 </footer>
 
 <!-- Auth modal -->
 <div id="authModal" class="modal hide">
-  <div class="modal-dialog">
+  <div class="modal-dialog" style="position:relative">
     <button class="modal-close" id="closeAuth" type="button">×</button>
-    <h3 class="modal-title">Sign in</h3>
+    <h3 id="authTitle" class="modal-title">Sign in</h3>
+    <div id="authStatusBox" class="alert hide"></div>
     <form id="emailLoginForm" class="stack">
       <input id="loginEmail" type="email" placeholder="you@example.com" required />
       <input id="loginPassword" type="password" placeholder="Password" required />
-      <button type="submit" class="btn primary">Sign in</button>
+      <button type="submit" class="btn primary" id="btnDoLogin">Sign in</button>
     </form>
-    <hr/>
-    <h3 class="modal-title">Create account</h3>
-    <form id="emailSignupForm" class="stack">
+    <form id="emailSignupForm" class="stack hide">
       <input id="signupEmail" type="email" placeholder="newuser@example.com" required />
-      <input id="signupPassword" type="password" placeholder="Password (min 6)" required />
-      <button type="submit" class="btn">Sign up</button>
+      <input id="signupPassword" type="password" minlength="6" placeholder="Password (min 6)" required />
+      <button type="submit" class="btn primary" id="btnDoSignup">Create account</button>
     </form>
+    <div class="switch-auth">
+      <span id="switchToSignup">Don’t have an account? <a href="#" id="linkToSignup">Create one</a></span>
+      <span id="switchToSignin" class="hide">Have an account? <a href="#" id="linkToSignin">Sign in</a></span>
+    </div>
   </div>
 </div>
 
