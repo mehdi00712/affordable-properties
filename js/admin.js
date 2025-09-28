@@ -8,7 +8,7 @@ import {
 document.addEventListener('DOMContentLoaded', () => {
   init().catch(err => {
     console.error(err);
-    const root = document.querySelector('main .wrap') || document.body;
+    const root = document.querySelector('main') || document.body;
     const p = document.createElement('p');
     p.className = 'muted';
     p.textContent = `Could not load admin: ${err.message}`;
@@ -24,7 +24,7 @@ async function init(){
   await load();
 }
 
-function getEls(){
+function els(){
   return {
     pendingDiv: document.getElementById('pending'),
     approvedDiv: document.getElementById('approved'),
@@ -33,11 +33,11 @@ function getEls(){
 }
 
 function makeCardElement(){
-  const { tpl } = getEls();
+  const { tpl } = els();
   if (tpl && tpl.content && tpl.content.firstElementChild){
     return tpl.content.firstElementChild.cloneNode(true);
   }
-  // Fallback simple card if template missing
+  // Fallback card if <template> is missing
   const wrap = document.createElement('div');
   wrap.className = 'card';
   wrap.innerHTML = `
@@ -57,17 +57,17 @@ function makeCardElement(){
 
 function card(l){
   const el = makeCardElement();
-  const img = el.querySelector('.card-img');
+  const img   = el.querySelector('.card-img');
   const title = el.querySelector('.card-title');
-  const meta = el.querySelector('.card-meta');
+  const meta  = el.querySelector('.card-meta');
   const price = el.querySelector('.card-price');
   const btnApprove = el.querySelector('.approve');
   const btnReject  = el.querySelector('.reject');
   const btnRemove  = el.querySelector('.remove');
 
-  if (img) img.style.backgroundImage = `url('${(l.images && l.images[0]) || ''}')`;
+  if (img)   img.style.backgroundImage = `url('${(l.images && l.images[0]) || ''}')`;
   if (title) title.textContent = l.title || '(untitled)';
-  if (meta) meta.textContent = `${l.propertyType||'-'} • ${l.city||'-'}, ${l.country||'-'} • Owner: ${(l.ownerUid||'').slice(0,6)}…`;
+  if (meta)  meta.textContent  = `${l.propertyType||'-'} • ${l.city||'-'}, ${l.country||'-'} • Owner: ${(l.ownerUid||'').slice(0,6)}…`;
   if (price) price.textContent = currencyFmt(l.price, l.currency) + (l.type==='rent'?' / mo':'');
 
   btnApprove && (btnApprove.onclick = ()=> setStatus(l.id,'approved'));
@@ -89,22 +89,32 @@ async function removeListing(id){
 }
 
 async function load(){
-  const { pendingDiv, approvedDiv } = getEls();
+  const { pendingDiv, approvedDiv } = els();
   if (!pendingDiv || !approvedDiv) throw new Error('Admin containers not found');
 
-  // Pending
+  // ----- Pending -----
   pendingDiv.innerHTML = '';
-  let snap = await getDocs(query(collection(db,'listings'), where('status','==','pending')));
-  let items = snap.docs.map(d=>({id:d.id, ...d.data()}));
-  items.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-  if (!items.length) pendingDiv.innerHTML = '<p class="muted">No pending items.</p>';
-  else items.forEach(it => pendingDiv.appendChild(card(it)));
+  try {
+    const snap = await getDocs(query(collection(db,'listings'), where('status','==','pending')));
+    let items = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    items.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    if (!items.length) pendingDiv.innerHTML = '<p class="muted">No pending items.</p>';
+    else items.forEach(it => pendingDiv.appendChild(card(it)));
+  } catch (err) {
+    console.error('Pending load failed:', err);
+    pendingDiv.innerHTML = `<p class="muted">Cannot load pending: ${err.code || err.message}</p>`;
+  }
 
-  // Approved
+  // ----- Approved -----
   approvedDiv.innerHTML = '';
-  snap = await getDocs(query(collection(db,'listings'), where('status','==','approved')));
-  items = snap.docs.map(d=>({id:d.id, ...d.data()}));
-  items.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-  if (!items.length) approvedDiv.innerHTML = '<p class="muted">No approved items.</p>';
-  else items.forEach(it => approvedDiv.appendChild(card(it)));
+  try {
+    const snap = await getDocs(query(collection(db,'listings'), where('status','==','approved')));
+    let items = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    items.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    if (!items.length) approvedDiv.innerHTML = '<p class="muted">No approved items.</p>';
+    else items.forEach(it => approvedDiv.appendChild(card(it)));
+  } catch (err) {
+    console.error('Approved load failed:', err);
+    approvedDiv.innerHTML = `<p class="muted">Cannot load approved: ${err.code || err.message}</p>`;
+  }
 }
