@@ -6,7 +6,7 @@
   <title>etoile property – Buy & Rent</title>
   <link rel="stylesheet" href="style.css"/>
 
-  <!-- Map CSS (for draw-your-area; safe to include always) -->
+  <!-- Map CSS (for draw-your-area) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"/>
 </head>
@@ -17,7 +17,7 @@
   </div>
 
   <!-- Hamburger (mobile) -->
-  <button class="hamburger" id="hamburgerBtn">☰</button>
+  <button class="hamburger" id="hamburgerBtn" type="button">☰</button>
 
   <!-- One menu with EVERYTHING so it collapses on mobile -->
   <nav class="menu" id="navMenu">
@@ -31,9 +31,9 @@
     <hr/>
     <a id="nav-dashboard" class="btn ghost hide" href="dashboard.html">Post a property</a>
     <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
-    <button id="btn-login" class="btn pill">Sign in</button>
-    <button id="btn-signup" class="btn pill">Sign up</button>
-    <button id="btn-logout" class="btn pill hide">Logout</button>
+    <button id="btn-login"  class="btn pill" type="button">Sign in</button>
+    <button id="btn-signup" class="btn pill" type="button">Sign up</button>
+    <button id="btn-logout" class="btn pill hide" type="button">Logout</button>
   </nav>
 
   <!-- User chip (status) -->
@@ -68,7 +68,7 @@
         <p>Save properties, create alerts and keep track of enquiries.</p>
       </div>
       <div>
-        <button id="btn-open-auth" class="btn outline small">Sign in or create an account</button>
+        <button id="btn-open-auth" class="btn outline small" type="button">Sign in or create an account</button>
       </div>
     </div>
   </div>
@@ -113,7 +113,7 @@
 <!-- Auth modal -->
 <div id="authModal" class="modal hide">
   <div class="modal-dialog">
-    <button class="modal-close" id="closeAuth">×</button>
+    <button class="modal-close" id="closeAuth" type="button">×</button>
     <h3 class="modal-title">Sign in</h3>
     <form id="emailLoginForm" class="stack">
       <input id="loginEmail" type="email" placeholder="you@example.com" required />
@@ -130,26 +130,13 @@
   </div>
 </div>
 
-<!-- Map Search modal -->
-<div id="mapModal" class="modal hide">
-  <div class="modal-dialog" style="width:min(880px,96vw);">
-    <button class="modal-close" id="closeMap">×</button>
-    <h3 class="modal-title">Draw your search area</h3>
-    <div id="mapSearch" style="height:420px;border-radius:12px;overflow:hidden;margin:8px 0;"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
-      <button id="btn-clear-shape" class="btn">Clear</button>
-      <button id="btn-apply-shape" class="btn primary">Apply filter</button>
-    </div>
-  </div>
-</div>
-
 <!-- Map JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
 
 <script type="module" src="js/app.js"></script>
 <script type="module" src="js/listings.js"></script>
-<script type="module" src="js/map-search.js"></script>
 <script type="module" src="js/render-helpers.js"></script>
+<script type="module" src="js/map-search.js"></script>
 </body>
 </html>
