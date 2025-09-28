@@ -35,23 +35,26 @@
   </div>
 </main>
 
-<!-- Auth modal -->
+<!-- Auth modal same as index.html -->
 <div id="authModal" class="modal hide">
-  <div class="modal-dialog">
+  <div class="modal-dialog" style="position:relative">
     <button class="modal-close" id="closeAuth" type="button">×</button>
-    <h3 class="modal-title">Sign in</h3>
+    <h3 id="authTitle" class="modal-title">Sign in</h3>
+    <div id="authStatusBox" class="alert hide"></div>
     <form id="emailLoginForm" class="stack">
       <input id="loginEmail" type="email" placeholder="you@example.com" required />
       <input id="loginPassword" type="password" placeholder="Password" required />
       <button type="submit" class="btn primary">Sign in</button>
     </form>
-    <hr/>
-    <h3 class="modal-title">Create account</h3>
-    <form id="emailSignupForm" class="stack">
+    <form id="emailSignupForm" class="stack hide">
       <input id="signupEmail" type="email" placeholder="newuser@example.com" required />
-      <input id="signupPassword" type="password" placeholder="Password (min 6)" required />
-      <button type="submit" class="btn">Sign up</button>
+      <input id="signupPassword" type="password" minlength="6" placeholder="Password (min 6)" required />
+      <button type="submit" class="btn primary">Create account</button>
     </form>
+    <div class="switch-auth">
+      <span id="switchToSignup">Don’t have an account? <a href="#" id="linkToSignup">Create one</a></span>
+      <span id="switchToSignin" class="hide">Have an account? <a href="#" id="linkToSignin">Sign in</a></span>
+    </div>
   </div>
 </div>
 
