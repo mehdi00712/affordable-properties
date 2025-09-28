@@ -9,13 +9,15 @@
 <body>
 <header class="topbar">
   <div class="brand"><a href="./" class="logo"><img src="etoile.jpg" alt="etoile property" /></a></div>
-  <button class="hamburger" id="hamburgerBtn">☰</button>
+  <button class="hamburger" id="hamburgerBtn" type="button">☰</button>
   <nav class="menu" id="navMenu">
     <a href="./?type=sale">Buy</a>
     <a href="./?type=rent">Rent</a>
     <hr/>
     <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
-    <button id="btn-logout" class="btn pill">Logout</button>
+    <button id="btn-login"  class="btn pill hide" type="button">Sign in</button>
+    <button id="btn-signup" class="btn pill hide" type="button">Sign up</button>
+    <button id="btn-logout" class="btn pill" type="button">Logout</button>
   </nav>
   <div id="userChip" class="user-chip"><div id="avatar" class="avatar">?</div><span id="authStatus" class="muted">Logged in</span></div>
 </header>
@@ -68,7 +70,6 @@
         </div>
       </fieldset>
 
-      <!-- Optional pin on map -->
       <fieldset class="fs">
         <legend>Location</legend>
         <div id="pickMap" style="height:280px;border-radius:12px;overflow:hidden;margin-bottom:8px"></div>
@@ -96,8 +97,8 @@
       <p class="card-price"></p>
       <p class="badge"></p>
       <div class="actions">
-        <button class="btn small">Edit</button>
-        <button class="btn outline small delete">Delete</button>
+        <button class="btn small" type="button">Edit</button>
+        <button class="btn outline small delete" type="button">Delete</button>
       </div>
     </div>
   </div>
