@@ -6,9 +6,11 @@
   <title>etoile property – Buy & Rent</title>
   <link rel="stylesheet" href="style.css"/>
 
-  <!-- Map CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"/>
+  <!-- Leaflet (for draw-your-area) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
+  <script defer src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
 </head>
 <body>
 <header class="topbar">
@@ -16,28 +18,21 @@
     <a href="./" class="logo"><img src="etoile.jpg" alt="etoile property" /></a>
   </div>
 
-  <button class="hamburger" id="hamburgerBtn" type="button">☰</button>
+  <!-- Mobile hamburger -->
+  <button class="hamburger" id="hamburgerBtn">☰</button>
 
+  <!-- All links live here so hamburger controls everything -->
   <nav class="menu" id="navMenu">
     <a href="./?type=sale">Buy</a>
     <a href="./?type=rent">Rent</a>
-    <a href="#" class="muted">House Prices</a>
-    <a href="#" class="muted">Find Agent</a>
     <a href="./?propertyType=commercial">Commercial</a>
-    <a href="#" class="muted">Expat Approved</a>
-    <a href="#" class="muted">Overseas</a>
     <hr/>
     <a id="nav-dashboard" class="btn ghost hide" href="dashboard.html">Post a property</a>
     <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
-    <button id="btn-login"  class="btn pill" type="button">Sign in</button>
-    <button id="btn-signup" class="btn pill" type="button">Sign up</button>
-    <button id="btn-logout" class="btn pill hide" type="button">Logout</button>
+    <button id="btn-login" class="btn pill">Sign in</button>
+    <button id="btn-signup" class="btn pill">Sign up</button>
+    <button id="btn-logout" class="btn pill hide">Logout</button>
   </nav>
-
-  <div id="userChip" class="user-chip">
-    <div id="avatar" class="avatar">?</div>
-    <span id="authStatus" class="muted">Logged out</span>
-  </div>
 </header>
 
 <section class="hero">
@@ -47,7 +42,7 @@
     <p class="sub">Search properties for sale and to rent</p>
 
     <form id="bigSearch" class="searchbar">
-      <input id="qCity" placeholder="e.g. Port Louis, Dubai, or postcode" />
+      <input id="qCity" placeholder="e.g. Port Louis, Dubai" />
       <div class="pills">
         <input type="radio" name="mode" id="sale" value="sale" checked>
         <label for="sale">For sale</label>
@@ -55,17 +50,10 @@
         <label for="rent">To rent</label>
       </div>
       <button class="btn primary" type="submit">Search</button>
-      <button id="btn-draw" class="btn outline" type="button">Draw on map</button>
     </form>
 
-    <div id="signinHint" class="hint">
-      <div>
-        <h3>Sign in to streamline your search</h3>
-        <p>Save properties, create alerts and keep track of enquiries.</p>
-      </div>
-      <div>
-        <button id="btn-open-auth" class="btn outline small" type="button">Sign in or create an account</button>
-      </div>
+    <div class="map-actions" style="margin-top:10px">
+      <button id="btn-draw-search" class="btn outline small">Draw your search area</button>
     </div>
   </div>
 </section>
@@ -86,51 +74,44 @@
   </a>
 </template>
 
-<footer class="footer">
-  <nav class="footer-links">
-    <a href="#">Site map</a><span class="sep">|</span>
-    <a href="#">Help</a><span class="sep">|</span>
-    <a href="#">Cookies</a><span class="sep">|</span>
-    <a href="#">Safety and Security</a><span class="sep">|</span>
-    <a href="#">Terms of Use</a><span class="sep">|</span>
-    <a href="#">Privacy Policy</a>
-  </nav>
-  <div class="footer-social">
-    <a href="#">f</a><a href="#">x</a><a href="#">◎</a><a href="#">♪</a><a href="#">▶</a>
-  </div>
-  <p class="copyright">© <span id="year"></span> etoile property</p>
-</footer>
+<footer class="footer">© <span id="year"></span> etoile property</footer>
 
 <!-- Auth modal -->
 <div id="authModal" class="modal hide">
-  <div class="modal-dialog" style="position:relative">
-    <button class="modal-close" id="closeAuth" type="button">×</button>
-    <h3 id="authTitle" class="modal-title">Sign in</h3>
-    <div id="authStatusBox" class="alert hide"></div>
+  <div class="modal-dialog">
+    <button class="modal-close" id="closeAuth">×</button>
+    <h3 class="modal-title">Sign in</h3>
     <form id="emailLoginForm" class="stack">
       <input id="loginEmail" type="email" placeholder="you@example.com" required />
       <input id="loginPassword" type="password" placeholder="Password" required />
-      <button type="submit" class="btn primary" id="btnDoLogin">Sign in</button>
+      <button type="submit" class="btn primary">Sign in</button>
     </form>
-    <form id="emailSignupForm" class="stack hide">
+    <hr/>
+    <h3 class="modal-title">Create account</h3>
+    <form id="emailSignupForm" class="stack">
       <input id="signupEmail" type="email" placeholder="newuser@example.com" required />
-      <input id="signupPassword" type="password" minlength="6" placeholder="Password (min 6)" required />
-      <button type="submit" class="btn primary" id="btnDoSignup">Create account</button>
+      <input id="signupPassword" type="password" placeholder="Password (min 6)" required />
+      <button type="submit" class="btn">Sign up</button>
     </form>
-    <div class="switch-auth">
-      <span id="switchToSignup">Don’t have an account? <a href="#" id="linkToSignup">Create one</a></span>
-      <span id="switchToSignin" class="hide">Have an account? <a href="#" id="linkToSignin">Sign in</a></span>
+  </div>
+</div>
+
+<!-- Map Draw modal -->
+<div id="mapDrawModal" class="modal hide">
+  <div class="modal-dialog" style="width:min(920px,95vw);padding:0">
+    <button class="modal-close" id="closeDraw">×</button>
+    <div style="height:min(70vh,560px); width:100%; overflow:hidden">
+      <div id="drawMap" style="height:100%; width:100%"></div>
+    </div>
+    <div style="display:flex; gap:8px; padding:12px; border-top:1px solid var(--line);">
+      <button id="applyPolygon" class="btn primary">Apply area filter</button>
+      <button id="clearPolygon" class="btn">Clear area</button>
     </div>
   </div>
 </div>
 
-<!-- Mp JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
-
 <script type="module" src="js/app.js"></script>
 <script type="module" src="js/listings.js"></script>
-<script type="module" src="js/render-helpers.js"></script>
 <script type="module" src="js/map-search.js"></script>
 </body>
 </html>
