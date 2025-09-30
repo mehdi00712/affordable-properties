@@ -1,4 +1,3 @@
-// js/dashboard.js
 import { requireAuth, currencyFmt, db } from './app.js';
 import { uploadFilesToCloudinary, cloudinaryReady } from './cloudinary.js';
 import {
@@ -13,10 +12,9 @@ const tpl = document.getElementById('myCardTpl');
 
 console.info("Cloudinary configured:", cloudinaryReady());
 
-let currentUser; 
-let selectedFiles = [];
+let currentUser; let selectedFiles = [];
 
-// Explicit inputs (IDs don't auto-become globals in modules)
+// Explicit inputs
 const titleInput        = document.getElementById('title');
 const typeInput         = document.getElementById('type');
 const propertyTypeInput = document.getElementById('propertyType');
@@ -32,6 +30,8 @@ const descriptionInput  = document.getElementById('description');
 const contactNameInput  = document.getElementById('contactName');
 const contactPhoneInput = document.getElementById('contactPhone');
 const contactEmailInput = document.getElementById('contactEmail');
+const latInput          = document.getElementById('lat');
+const lngInput          = document.getElementById('lng');
 
 filesInput.addEventListener('change', e=>{
   selectedFiles = Array.from(e.target.files || []);
@@ -97,6 +97,9 @@ function editListing(l){
   contactNameInput.value  = l.ownerContact?.name  ?? '';
   contactPhoneInput.value = l.ownerContact?.phone ?? '';
   contactEmailInput.value = l.ownerContact?.email ?? '';
+  latInput.value          = l.lat ?? '';
+  lngInput.value          = l.lng ?? '';
+  document.getElementById('pickedLatLng').textContent = (l.lat && l.lng) ? `Selected: ${l.lat}, ${l.lng}` : 'No location selected';
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -129,6 +132,10 @@ form.addEventListener('submit', async (e)=>{
       updatedAt: serverTimestamp()
     };
 
+    const lat = parseFloat(latInput.value);
+    const lng = parseFloat(lngInput.value);
+    if (Number.isFinite(lat) && Number.isFinite(lng)){ data.lat = lat; data.lng = lng; }
+
     if (!data.title || !data.type || !data.propertyType || !data.city || !data.country || !data.price) {
       throw new Error('Please fill in all required fields.');
     }
@@ -152,9 +159,8 @@ form.addEventListener('submit', async (e)=>{
       alert('Submitted. Awaiting admin approval.');
     }
 
-    form.reset();
-    previewDiv.innerHTML = '';
-    selectedFiles = [];
+    form.reset(); previewDiv.innerHTML = ''; selectedFiles = [];
+    document.getElementById('pickedLatLng').textContent = 'No location selected';
     await loadMyListings();
 
   } catch (err){
