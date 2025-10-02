@@ -1,5 +1,5 @@
 // js/app.js
-// Auth UI + hamburger + helpers (no Firestore composite indexes needed)
+// Auth + Nav (hamburger + mobile submenus) + shared helpers (no Firestore composite indexes)
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
@@ -26,13 +26,13 @@ const app = initializeApp({
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// do persistence safely (no top-level await)
+// Persist session (wrapped; no top-level await)
 (async () => {
   try { await setPersistence(auth, browserSessionPersistence); }
   catch (e) { console.warn("Auth persistence warning:", e?.message); }
 })();
 
-// ---- Nav/auth refs ----
+// ---- Nav/auth elements ----
 const loginBtn = document.getElementById('btn-login');
 const signupBtn = document.getElementById('btn-signup');
 const openAuthBtn = document.getElementById('btn-open-auth');
@@ -42,7 +42,7 @@ const navAdmin = document.getElementById('nav-admin');
 const yearSpan = document.getElementById('year');
 if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
-// ---- Auth modal refs ----
+// ---- Auth modal elements ----
 const modal = document.getElementById('authModal');
 const closeAuth = document.getElementById('closeAuth');
 const loginForm = document.getElementById('emailLoginForm');
@@ -85,9 +85,9 @@ logoutBtn && logoutBtn.addEventListener('click', async ()=>{
 // ---- Auth state → nav visibility ----
 onAuthStateChanged(auth, (user)=>{
   const loggedIn = !!user;
-  if (loginBtn)   loginBtn.classList.toggle('hide', loggedIn);
-  if (signupBtn)  signupBtn.classList.toggle('hide', loggedIn);
-  if (logoutBtn)  logoutBtn.classList.toggle('hide', !loggedIn);
+  if (loginBtn)     loginBtn.classList.toggle('hide', loggedIn);
+  if (signupBtn)    signupBtn.classList.toggle('hide', loggedIn);
+  if (logoutBtn)    logoutBtn.classList.toggle('hide', !loggedIn);
   if (navDashboard) navDashboard.classList.toggle('hide', !loggedIn);
 
   if (navAdmin){
@@ -100,16 +100,25 @@ onAuthStateChanged(auth, (user)=>{
 const hamburgerBtn = document.getElementById('hamburgerBtn');
 const navMenu = document.getElementById('navMenu');
 
-function closeMenu(){ navMenu && navMenu.classList.remove('show'); }
+function closeMenu(){ navMenu && navMenu.classList.remove('show'); hamburgerBtn?.setAttribute('aria-expanded','false'); }
+function toggleMenu(){
+  if (!navMenu) return;
+  const show = !navMenu.classList.contains('show');
+  navMenu.classList.toggle('show', show);
+  hamburgerBtn?.setAttribute('aria-expanded', show ? 'true' : 'false');
+}
+
 hamburgerBtn && hamburgerBtn.addEventListener('click', (e)=>{
   e.stopPropagation();
-  navMenu && navMenu.classList.toggle('show');
+  toggleMenu();
 });
-// close when clicking any link/button inside the menu
+
+// Close hamburger when a link or button inside is clicked
 navMenu && navMenu.addEventListener('click', (e)=>{
   if (e.target.closest('a') || e.target.closest('button')) closeMenu();
 });
-// close when clicking outside
+
+// Close hamburger when clicking outside
 document.addEventListener('click', (e)=>{
   if (!navMenu || !navMenu.classList.contains('show')) return;
   const inside = navMenu.contains(e.target);
@@ -117,12 +126,50 @@ document.addEventListener('click', (e)=>{
   if (!inside && !isBtn) closeMenu();
 });
 
-// ---- Helpers (no Firestore composite indexes; sort in JS) ----
+// ---- Submenu toggles (mobile accordion) ----
+function isMobile(){ return window.matchMedia('(max-width: 768px)').matches; }
+
+function closeAllSubmenus(){
+  document.querySelectorAll('#navMenu .submenu').forEach(s => s.classList.remove('show'));
+  document.querySelectorAll('#navMenu .sub-toggle[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded','false'));
+}
+
+document.querySelectorAll('#navMenu .sub-toggle').forEach(btn=>{
+  btn.addEventListener('click', (e)=>{
+    // On desktop, CSS hover handles showing; only toggle on mobile
+    if (!isMobile()) return;
+    e.preventDefault();
+    const submenu = btn.nextElementSibling;
+    if (!submenu) return;
+    const isOpen = submenu.classList.contains('show');
+    closeAllSubmenus();
+    if (!isOpen){
+      submenu.classList.add('show');
+      btn.setAttribute('aria-expanded','true');
+    }
+  });
+});
+
+// Close submenus when clicking outside (mobile)
+document.addEventListener('click', (e)=>{
+  if (!isMobile()) return;
+  const insideMenu = navMenu && navMenu.contains(e.target);
+  const isHamb = hamburgerBtn && hamburgerBtn.contains(e.target);
+  if (!insideMenu && !isHamb) closeAllSubmenus();
+});
+
+// Also close submenus when a submenu link is tapped (mobile)
+navMenu && navMenu.addEventListener('click', (e)=>{
+  if (!isMobile()) return;
+  if (e.target.closest('.submenu a')) closeAllSubmenus();
+});
+
+// ---- Helpers (no Firestore composite indexes; sort client-side) ----
 export async function getApprovedListings(filters = {}){
   const q = query(collection(db,'listings'), where('status','==','approved'));
   const snap = await getDocs(q);
   let items = snap.docs.map(d=>({id:d.id, ...d.data()}));
-  // sort by createdAt desc if present
+  // Sort newest first by createdAt
   items.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
 
   if (filters.type)          items = items.filter(x => x.type === filters.type);
@@ -134,8 +181,8 @@ export async function getApprovedListings(filters = {}){
 }
 
 export function currencyFmt(v, code='MUR'){
-  try{ return new Intl.NumberFormat(undefined,{style:'currency',currency:code,maximumFractionDigits:0}).format(v); }
-  catch{ return `${v} ${code}`; }
+  try { return new Intl.NumberFormat(undefined,{style:'currency',currency:code,maximumFractionDigits:0}).format(v); }
+  catch { return `${v} ${code}`; }
 }
 export function listingLink(id){ return `listing.html?id=${encodeURIComponent(id)}`; }
 export function firstImage(l){ return (l.images && l.images[0]) || ''; }
@@ -154,5 +201,5 @@ export async function requireAuth(){
   });
 }
 
-// Expose for other modules
+// Expose Firestore/Auth for other modules
 export { auth, db };
