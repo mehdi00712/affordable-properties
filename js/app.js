@@ -1,5 +1,8 @@
 // js/app.js
-// Auth + Nav (hamburger + mobile submenus) + shared helpers (no Firestore composite indexes)
+// Auth + Nav (hamburger + mobile submenus) + helpers
+// - Redirect to home on logout
+// - Separate Sign in and Sign up modals
+// - No Firestore composite indexes (sort client-side)
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
@@ -35,37 +38,46 @@ const db = getFirestore(app);
 // ---- Nav/auth elements ----
 const loginBtn = document.getElementById('btn-login');
 const signupBtn = document.getElementById('btn-signup');
-const openAuthBtn = document.getElementById('btn-open-auth');
 const logoutBtn = document.getElementById('btn-logout');
 const navDashboard = document.getElementById('nav-dashboard');
 const navAdmin = document.getElementById('nav-admin');
 const yearSpan = document.getElementById('year');
 if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
-// ---- Auth modal elements ----
-const modal = document.getElementById('authModal');
-const closeAuth = document.getElementById('closeAuth');
-const loginForm = document.getElementById('emailLoginForm');
-const signupForm = document.getElementById('emailSignupForm');
+// ---- Separate modals ----
+const loginModal  = document.getElementById('loginModal');
+const signupModal = document.getElementById('signupModal');
+
+const closeLogin  = document.getElementById('closeLogin');
+const closeSignup = document.getElementById('closeSignup');
+
+const loginForm   = document.getElementById('emailLoginForm');
+const signupForm  = document.getElementById('emailSignupForm');
+
 const loginEmail = document.getElementById('loginEmail');
 const loginPassword = document.getElementById('loginPassword');
 const signupEmail = document.getElementById('signupEmail');
 const signupPassword = document.getElementById('signupPassword');
 
-// ---- Modal handlers ----
-function openModal(){ modal && modal.classList.remove('hide'); }
-function closeModal(){ modal && modal.classList.add('hide'); }
-loginBtn && loginBtn.addEventListener('click', openModal);
-signupBtn && signupBtn.addEventListener('click', openModal);
-openAuthBtn && openAuthBtn.addEventListener('click', openModal);
-closeAuth && closeAuth.addEventListener('click', closeModal);
+function show(el){ el && el.classList.remove('hide'); }
+function hide(el){ el && el.classList.add('hide'); }
+
+function openLogin(){ show(loginModal); hide(signupModal); }
+function openSignup(){ show(signupModal); hide(loginModal); }
+function closeBoth(){ hide(loginModal); hide(signupModal); }
+
+// Open/close buttons
+loginBtn   && loginBtn.addEventListener('click', openLogin);
+signupBtn  && signupBtn.addEventListener('click', openSignup);
+closeLogin && closeLogin.addEventListener('click', ()=> hide(loginModal));
+closeSignup&& closeSignup.addEventListener('click', ()=> hide(signupModal));
 
 // ---- Auth flows ----
 loginForm && loginForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
   try{
     await signInWithEmailAndPassword(auth, (loginEmail?.value||'').trim(), loginPassword?.value||'');
-    closeModal();
+    closeBoth();
   }catch(err){ alert(`Sign-in failed: ${err.message}`); }
 });
 
@@ -74,12 +86,14 @@ signupForm && signupForm.addEventListener('submit', async (e)=>{
   try{
     await createUserWithEmailAndPassword(auth, (signupEmail?.value||'').trim(), signupPassword?.value||'');
     alert('Account created! You are now signed in.');
-    closeModal();
+    closeBoth();
   }catch(err){ alert(`Sign-up failed: ${err.message}`); }
 });
 
+// ---- Logout → ALWAYS go home ----
 logoutBtn && logoutBtn.addEventListener('click', async ()=>{
-  try { await signOut(auth); } finally { openModal(); }
+  try { await signOut(auth); }
+  finally { window.location.href = './'; }  // redirect to homepage from any page
 });
 
 // ---- Auth state → nav visibility ----
@@ -100,25 +114,26 @@ onAuthStateChanged(auth, (user)=>{
 const hamburgerBtn = document.getElementById('hamburgerBtn');
 const navMenu = document.getElementById('navMenu');
 
-function closeMenu(){ navMenu && navMenu.classList.remove('show'); hamburgerBtn?.setAttribute('aria-expanded','false'); }
+function closeMenu(){
+  if (!navMenu) return;
+  navMenu.classList.remove('show');
+  hamburgerBtn?.setAttribute('aria-expanded','false');
+}
 function toggleMenu(){
   if (!navMenu) return;
   const show = !navMenu.classList.contains('show');
   navMenu.classList.toggle('show', show);
   hamburgerBtn?.setAttribute('aria-expanded', show ? 'true' : 'false');
 }
-
 hamburgerBtn && hamburgerBtn.addEventListener('click', (e)=>{
   e.stopPropagation();
   toggleMenu();
 });
-
-// Close hamburger when a link or button inside is clicked
+// close when clicking any link/button inside
 navMenu && navMenu.addEventListener('click', (e)=>{
   if (e.target.closest('a') || e.target.closest('button')) closeMenu();
 });
-
-// Close hamburger when clicking outside
+// close when clicking outside
 document.addEventListener('click', (e)=>{
   if (!navMenu || !navMenu.classList.contains('show')) return;
   const inside = navMenu.contains(e.target);
@@ -128,16 +143,13 @@ document.addEventListener('click', (e)=>{
 
 // ---- Submenu toggles (mobile accordion) ----
 function isMobile(){ return window.matchMedia('(max-width: 768px)').matches; }
-
 function closeAllSubmenus(){
   document.querySelectorAll('#navMenu .submenu').forEach(s => s.classList.remove('show'));
   document.querySelectorAll('#navMenu .sub-toggle[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded','false'));
 }
-
 document.querySelectorAll('#navMenu .sub-toggle').forEach(btn=>{
   btn.addEventListener('click', (e)=>{
-    // On desktop, CSS hover handles showing; only toggle on mobile
-    if (!isMobile()) return;
+    if (!isMobile()) return; // desktop handled by CSS hover
     e.preventDefault();
     const submenu = btn.nextElementSibling;
     if (!submenu) return;
@@ -149,16 +161,12 @@ document.querySelectorAll('#navMenu .sub-toggle').forEach(btn=>{
     }
   });
 });
-
-// Close submenus when clicking outside (mobile)
 document.addEventListener('click', (e)=>{
   if (!isMobile()) return;
   const insideMenu = navMenu && navMenu.contains(e.target);
   const isHamb = hamburgerBtn && hamburgerBtn.contains(e.target);
   if (!insideMenu && !isHamb) closeAllSubmenus();
 });
-
-// Also close submenus when a submenu link is tapped (mobile)
 navMenu && navMenu.addEventListener('click', (e)=>{
   if (!isMobile()) return;
   if (e.target.closest('.submenu a')) closeAllSubmenus();
@@ -169,8 +177,7 @@ export async function getApprovedListings(filters = {}){
   const q = query(collection(db,'listings'), where('status','==','approved'));
   const snap = await getDocs(q);
   let items = snap.docs.map(d=>({id:d.id, ...d.data()}));
-  // Sort newest first by createdAt
-  items.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+  items.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)); // newest first
 
   if (filters.type)          items = items.filter(x => x.type === filters.type);
   if (filters.propertyType)  items = items.filter(x => x.propertyType === filters.propertyType);
@@ -179,7 +186,6 @@ export async function getApprovedListings(filters = {}){
   if (filters.maxPrice)      items = items.filter(x => Number(x.price) <= Number(filters.maxPrice));
   return items;
 }
-
 export function currencyFmt(v, code='MUR'){
   try { return new Intl.NumberFormat(undefined,{style:'currency',currency:code,maximumFractionDigits:0}).format(v); }
   catch { return `${v} ${code}`; }
@@ -201,5 +207,4 @@ export async function requireAuth(){
   });
 }
 
-// Expose Firestore/Auth for other modules
 export { auth, db };
