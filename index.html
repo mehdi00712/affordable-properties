@@ -16,58 +16,71 @@
 <!-- Top bar -->
 <header class="topbar">
   <div class="brand">
-    <a href="./" class="logo"><img src="etoile.jpg" alt="etoile property"/></a>
+    <a href="./" class="logo"><img src="etoile.jpg" alt="etoile property" /></a>
   </div>
 
-  <!-- Hamburger (mobile) -->
-  <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu" aria-expanded="false">☰</button>
+  <!-- Hamburger button (mobile only) -->
+  <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">☰</button>
 
- <nav class="menu" id="navMenu" aria-label="Primary">
-  <!-- Buy -->
-  <div class="has-submenu">
-    <button class="sub-toggle" aria-expanded="false">Buy ▾</button>
-    <div class="submenu">
-      <a href="./?type=sale">Property for sale</a>
-      <a href="./?type=sale&sub=offplan">Offplan property</a>
-      <a href="./?type=sale&sub=valuation">Property valuation</a>
-      <a href="./?type=sale&sub=investors">Investors</a>
-      <a href="./?type=sale&sub=mortgage">Mortgage</a>
-      <a href="./?propertyType=commercial">Commercial</a>
+  <!-- One menu with all links/buttons (same structure as admin.html) -->
+  <nav class="menu" id="navMenu" aria-label="Primary">
+    <!-- BUY -->
+    <div class="has-sub">
+      <button class="navlink sub-toggle" aria-expanded="false">Buy</button>
+      <div class="submenu">
+        <a href="./?type=sale">Property for sale</a>
+        <a href="#" class="muted">Offplan property</a>
+        <a href="#" class="muted">Property valuation</a>
+        <a href="#" class="muted">Investors</a>
+        <a href="#" class="muted">Mortgage</a>
+        <a href="./?propertyType=expat" class="muted">Expat Approved</a>
+        <a href="./?propertyType=commercial">Commercial</a>
+      </div>
     </div>
-  </div>
 
-  <!-- Rent -->
-  <div class="has-submenu">
-    <button class="sub-toggle" aria-expanded="false">Rent ▾</button>
-    <div class="submenu">
-      <a href="./?type=rent">Property to rent</a>
-      <a href="./?type=rent&sub=student">Student property</a>
-      <a href="./?type=rent&sub=holiday">Holiday homes</a>
-      <a href="./?type=rent&sub=shortterm">Short term rentals</a>
-      <a href="./?type=rent&sub=commercial">Commercial</a>
+    <!-- RENT -->
+    <div class="has-sub">
+      <button class="navlink sub-toggle" aria-expanded="false">Rent</button>
+      <div class="submenu">
+        <a href="./?type=rent">Property to rent</a>
+        <a href="#" class="muted">Student property to rent</a>
+        <a href="#" class="muted">Holiday homes</a>
+        <a href="#" class="muted">Short term rentals</a>
+        <a href="./?type=rent&propertyType=commercial">Commercial</a>
+      </div>
     </div>
-  </div>
 
-  <!-- Commercial (separate) -->
-  <div class="has-submenu">
-    <button class="sub-toggle" aria-expanded="false">Commercial ▾</button>
-    <div class="submenu">
-      <a href="./?propertyType=commercial&sub=offices">Offices</a>
-      <a href="./?propertyType=commercial&sub=retail">Retail</a>
-      <a href="./?propertyType=commercial&sub=industrial">Industrial</a>
-      <a href="./?propertyType=commercial&sub=land">Land</a>
+    <!-- PROPERTY ABROAD -->
+    <div class="has-sub">
+      <button class="navlink sub-toggle" aria-expanded="false">Property Abroad</button>
+      <div class="submenu cols">
+        <a href="#" class="muted">All Countries</a>
+        <a href="#" class="muted">UAE</a>
+        <a href="#" class="muted">UK</a>
+        <a href="#" class="muted">Spain</a>
+        <a href="#" class="muted">France</a>
+        <a href="#" class="muted">Greece</a>
+        <a href="#" class="muted">Sell Overseas Property</a>
+      </div>
     </div>
-  </div>
 
-  <hr/>
+    <!-- EVENTS (hidden for now) -->
+    <div class="has-sub hidden">
+      <button class="navlink sub-toggle" aria-expanded="false">Events</button>
+      <div class="submenu">
+        <a href="#" class="muted">Dubai Roadshow</a>
+      </div>
+    </div>
 
-  <a id="nav-dashboard" class="btn ghost hide" href="dashboard.html">Post a property</a>
-  <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
-  <button id="btn-login" class="btn pill">Sign in</button>
-  <button id="btn-signup" class="btn pill">Sign up</button>
-  <button id="btn-logout" class="btn pill hide">Logout</button>
-</nav>
+    <hr/>
 
+    <!-- Auth / actions -->
+    <a id="nav-dashboard" class="btn ghost hide" href="dashboard.html">Post a property</a>
+    <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
+    <button id="btn-login" class="btn pill">Sign in</button>
+    <button id="btn-signup" class="btn pill">Sign up</button>
+    <button id="btn-logout" class="btn pill hide">Logout</button>
+  </nav>
 </header>
 
 <!-- Hero with big search -->
@@ -114,10 +127,10 @@
 
 <footer class="footer">© <span id="year"></span> etoile property</footer>
 
-<!-- Login modal -->
+<!-- Login modal (separate) -->
 <div id="loginModal" class="modal hide" aria-hidden="true">
   <div class="modal-dialog">
-    <button class="modal-close" id="closeLogin">×</button>
+    <button class="modal-close" id="closeLogin" aria-label="Close">×</button>
     <h3 class="modal-title">Sign in</h3>
     <form id="emailLoginForm" class="stack">
       <input id="loginEmail" type="email" placeholder="you@example.com" required />
@@ -128,10 +141,10 @@
   </div>
 </div>
 
-<!-- Signup modal -->
+<!-- Signup modal (separate) -->
 <div id="signupModal" class="modal hide" aria-hidden="true">
   <div class="modal-dialog">
-    <button class="modal-close" id="closeSignup">×</button>
+    <button class="modal-close" id="closeSignup" aria-label="Close">×</button>
     <h3 class="modal-title">Create account</h3>
     <form id="emailSignupForm" class="stack">
       <input id="signupEmail" type="email" placeholder="newuser@example.com" required />
@@ -141,7 +154,6 @@
     <p class="modal-switch">Already have an account? <a href="#" id="goLogin">Sign in</a></p>
   </div>
 </div>
-
 
 <!-- Draw-on-map modal -->
 <div id="mapDrawModal" class="modal hide">
