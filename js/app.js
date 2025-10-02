@@ -2,6 +2,7 @@
 // Auth + Nav (hamburger + mobile submenus) + helpers
 // - Redirect to home on logout
 // - Separate Sign in and Sign up modals
+// - Friendly Firebase auth errors
 // - No Firestore composite indexes (sort client-side)
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
@@ -59,8 +60,12 @@ const loginPassword = document.getElementById('loginPassword');
 const signupEmail = document.getElementById('signupEmail');
 const signupPassword = document.getElementById('signupPassword');
 
-function show(el){ el && el.classList.remove('hide'); }
-function hide(el){ el && el.classList.add('hide'); }
+// Switch links inside modals
+const goSignup = document.getElementById('goSignup');
+const goLogin  = document.getElementById('goLogin');
+
+function show(el){ el && el.classList.remove('hide'); el?.setAttribute('aria-hidden','false'); }
+function hide(el){ el && el.classList.add('hide');   el?.setAttribute('aria-hidden','true'); }
 
 function openLogin(){ show(loginModal); hide(signupModal); }
 function openSignup(){ show(signupModal); hide(loginModal); }
@@ -72,13 +77,48 @@ signupBtn  && signupBtn.addEventListener('click', openSignup);
 closeLogin && closeLogin.addEventListener('click', ()=> hide(loginModal));
 closeSignup&& closeSignup.addEventListener('click', ()=> hide(signupModal));
 
+// Switch between modals (fixes “Create one” not working)
+goSignup && goSignup.addEventListener('click', (e)=>{ e.preventDefault(); openSignup(); });
+goLogin  && goLogin.addEventListener('click',  (e)=>{ e.preventDefault(); openLogin();  });
+
+// Overlay click + ESC to close
+[loginModal, signupModal].forEach(m=>{
+  m?.addEventListener('click', e=>{ if(e.target===m) hide(m); });
+});
+document.addEventListener('keydown', e=>{
+  if(e.key==="Escape"){ closeBoth(); }
+});
+
+// ---- Friendly auth error messages ----
+function authMessage(err){
+  const code = String(err?.code || '').replace('auth/','');
+  switch (code) {
+    case 'invalid-credential':
+    case 'user-not-found':
+    case 'wrong-password':
+      return 'Invalid email or password.';
+    case 'invalid-email':
+      return 'Please enter a valid email address.';
+    case 'too-many-requests':
+      return 'Too many attempts. Please try again later.';
+    case 'network-request-failed':
+      return 'Network error. Check your connection and try again.';
+    case 'email-already-in-use':
+      return 'This email is already registered. Try signing in.';
+    case 'weak-password':
+      return 'Password is too weak. Use at least 6 characters.';
+    default:
+      return err?.message || 'Something went wrong.';
+  }
+}
+
 // ---- Auth flows ----
 loginForm && loginForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
   try{
     await signInWithEmailAndPassword(auth, (loginEmail?.value||'').trim(), loginPassword?.value||'');
     closeBoth();
-  }catch(err){ alert(`Sign-in failed: ${err.message}`); }
+  }catch(err){ alert(authMessage(err)); }
 });
 
 signupForm && signupForm.addEventListener('submit', async (e)=>{
@@ -87,7 +127,7 @@ signupForm && signupForm.addEventListener('submit', async (e)=>{
     await createUserWithEmailAndPassword(auth, (signupEmail?.value||'').trim(), signupPassword?.value||'');
     alert('Account created! You are now signed in.');
     closeBoth();
-  }catch(err){ alert(`Sign-up failed: ${err.message}`); }
+  }catch(err){ alert(authMessage(err)); }
 });
 
 // ---- Logout → ALWAYS go home ----
