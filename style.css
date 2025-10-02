@@ -167,3 +167,8 @@ a{color:inherit;text-decoration:none}
 
 /* Hidden group (Events) */
 .hidden { display: none !important; }
+
+/* Auth modals switch link */
+.modal-switch { margin-top: 12px; font-size: 14px; color: var(--muted); text-align:center; }
+.modal-switch a { color: var(--text); text-decoration: underline; }
+.modal-switch a:hover { text-decoration: none; }
