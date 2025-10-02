@@ -7,15 +7,74 @@
 </head>
 <body>
 <header class="topbar">
-  <div class="brand"><a href="./" class="logo"><img src="etoile.jpg" alt="etoile property" /></a></div>
-  <button class="hamburger" id="hamburgerBtn">☰</button>
-  <nav class="menu" id="navMenu">
-    <a href="./?type=sale">Buy</a>
-    <a href="./?type=rent">Rent</a>
+  <div class="brand">
+    <a href="./" class="logo"><img src="etoile.jpg" alt="etoile property" /></a>
+  </div>
+
+  <!-- Hamburger button (mobile only) -->
+  <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">☰</button>
+
+  <!-- One menu with all links/buttons -->
+  <nav class="menu" id="navMenu" aria-label="Primary">
+    <!-- BUY -->
+    <div class="has-sub">
+      <button class="navlink sub-toggle" aria-expanded="false">Buy</button>
+      <div class="submenu">
+        <a href="./?type=sale">Property for sale</a>
+        <a href="#" class="muted">Offplan property</a>
+        <a href="#" class="muted">Property valuation</a>
+        <a href="#" class="muted">Investors</a>
+        <a href="#" class="muted">Mortgage</a>
+        <a href="./?propertyType=expat" class="muted">Expat Approved</a>
+        <a href="./?propertyType=commercial">Commercial</a>
+      </div>
+    </div>
+
+    <!-- RENT -->
+    <div class="has-sub">
+      <button class="navlink sub-toggle" aria-expanded="false">Rent</button>
+      <div class="submenu">
+        <a href="./?type=rent">Property to rent</a>
+        <a href="#" class="muted">Student property to rent</a>
+        <a href="#" class="muted">Holiday homes</a>
+        <a href="#" class="muted">Short term rentals</a>
+        <a href="./?type=rent&propertyType=commercial">Commercial</a>
+      </div>
+    </div>
+
+    <!-- PROPERTY ABROAD -->
+    <div class="has-sub">
+      <button class="navlink sub-toggle" aria-expanded="false">Property Abroad</button>
+      <div class="submenu cols">
+        <a href="#" class="muted">All Countries</a>
+        <a href="#" class="muted">UAE</a>
+        <a href="#" class="muted">UK</a>
+        <a href="#" class="muted">Spain</a>
+        <a href="#" class="muted">France</a>
+        <a href="#" class="muted">Greece</a>
+        <a href="#" class="muted">Sell Overseas Property</a>
+      </div>
+    </div>
+
+    <!-- EVENTS (hidden for now) -->
+    <div class="has-sub hidden">
+      <button class="navlink sub-toggle" aria-expanded="false">Events</button>
+      <div class="submenu">
+        <a href="#" class="muted">Dubai Roadshow</a>
+      </div>
+    </div>
+
     <hr/>
-    <button id="btn-logout" class="btn pill">Logout</button>
+
+    <!-- Auth / actions -->
+    <a id="nav-dashboard" class="btn ghost hide" href="dashboard.html">Post a property</a>
+    <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
+    <button id="btn-login" class="btn pill">Sign in</button>
+    <button id="btn-signup" class="btn pill">Sign up</button>
+    <button id="btn-logout" class="btn pill hide">Logout</button>
   </nav>
 </header>
+
 
 <main class="wrap">
   <h1>Moderation</h1>
