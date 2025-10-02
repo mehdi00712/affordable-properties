@@ -22,18 +22,52 @@
   <!-- Hamburger (mobile) -->
   <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu" aria-expanded="false">☰</button>
 
-  <!-- One menu with ALL links + auth -->
-  <nav class="menu" id="navMenu" aria-label="Primary">
-    <a href="./?type=sale">Buy</a>
-    <a href="./?type=rent">Rent</a>
-    <a href="./?propertyType=commercial">Commercial</a>
-    <hr/>
-    <a id="nav-dashboard" class="btn ghost hide" href="dashboard.html">Post a property</a>
-    <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
-    <button id="btn-login" class="btn pill">Sign in</button>
-    <button id="btn-signup" class="btn pill">Sign up</button>
-    <button id="btn-logout" class="btn pill hide">Logout</button>
-  </nav>
+ <nav class="menu" id="navMenu" aria-label="Primary">
+  <!-- Buy -->
+  <div class="has-submenu">
+    <button class="sub-toggle" aria-expanded="false">Buy ▾</button>
+    <div class="submenu">
+      <a href="./?type=sale">Property for sale</a>
+      <a href="./?type=sale&sub=offplan">Offplan property</a>
+      <a href="./?type=sale&sub=valuation">Property valuation</a>
+      <a href="./?type=sale&sub=investors">Investors</a>
+      <a href="./?type=sale&sub=mortgage">Mortgage</a>
+      <a href="./?propertyType=commercial">Commercial</a>
+    </div>
+  </div>
+
+  <!-- Rent -->
+  <div class="has-submenu">
+    <button class="sub-toggle" aria-expanded="false">Rent ▾</button>
+    <div class="submenu">
+      <a href="./?type=rent">Property to rent</a>
+      <a href="./?type=rent&sub=student">Student property</a>
+      <a href="./?type=rent&sub=holiday">Holiday homes</a>
+      <a href="./?type=rent&sub=shortterm">Short term rentals</a>
+      <a href="./?type=rent&sub=commercial">Commercial</a>
+    </div>
+  </div>
+
+  <!-- Commercial (separate) -->
+  <div class="has-submenu">
+    <button class="sub-toggle" aria-expanded="false">Commercial ▾</button>
+    <div class="submenu">
+      <a href="./?propertyType=commercial&sub=offices">Offices</a>
+      <a href="./?propertyType=commercial&sub=retail">Retail</a>
+      <a href="./?propertyType=commercial&sub=industrial">Industrial</a>
+      <a href="./?propertyType=commercial&sub=land">Land</a>
+    </div>
+  </div>
+
+  <hr/>
+
+  <a id="nav-dashboard" class="btn ghost hide" href="dashboard.html">Post a property</a>
+  <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
+  <button id="btn-login" class="btn pill">Sign in</button>
+  <button id="btn-signup" class="btn pill">Sign up</button>
+  <button id="btn-logout" class="btn pill hide">Logout</button>
+</nav>
+
 </header>
 
 <!-- Hero with big search -->
