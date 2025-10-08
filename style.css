@@ -70,7 +70,7 @@ body.nav-open { overflow: hidden; }
 .btn.danger{ border-color:#ef4444; color:#ef4444; }
 .btn.danger:hover{ background:#fee2e2; }
 
-/* -------------- Topbar / Nav -------------- */
+/* -------------- Topbar / Nav button -------------- */
 .topbar{
   position: sticky; top: 0; z-index: 500;      /* below drawer & modal */
   background: rgba(255,255,255,.96);
@@ -82,7 +82,6 @@ body.nav-open { overflow: hidden; }
 .topbar .brand{ display:flex; align-items:center; height: var(--topbar-h); padding-left: 12px; }
 .logo img{ height: 40px; width:auto; }
 
-/* grid: brand | hamburger | menu */
 .topbar{ display:grid; grid-template-columns: auto auto 1fr; align-items:center; }
 .hamburger{
   margin: 0 10px;
@@ -91,11 +90,11 @@ body.nav-open { overflow: hidden; }
   cursor: pointer; font-size: 20px; line-height: 1;
 }
 
-/* Desktop menu */
+/* Desktop menu (not visible on desktop here because we use drawer on all small widths) */
 .menu{ display:flex; align-items:center; gap:14px; padding-right:10px; }
 .menu > a, .menu > button.navlink{ text-decoration:none; color:var(--text); }
 
-/* Submenus (desktop) */
+/* Submenus (desktop hover) */
 .navlink{ background:none; border:none; font:inherit; padding:10px 12px; cursor:pointer; }
 .has-sub{ position:relative; }
 .submenu{
@@ -107,7 +106,7 @@ body.nav-open { overflow: hidden; }
 .submenu a{ display:block; padding:8px 10px; border-radius:8px; color:var(--text); }
 .submenu a:hover{ background:#f5f7fb; }
 .submenu.cols{ min-width:440px; column-gap:24px; }
-.has-sub:hover .submenu{ display:block; } /* desktop hover */
+.has-sub:hover .submenu{ display:block; }
 .hidden{ display:none !important; }
 
 /* ---------- Mobile menu: full-screen overlay ---------- */
@@ -133,7 +132,7 @@ body.nav-open { overflow: hidden; }
     padding: 6px 8px; z-index: 1;
   }
   .has-sub .submenu.show{ display:block; }
-  .has-sub:hover .submenu{ display:none; } /* disable hover on mobile */
+  .has-sub:hover .submenu{ display:none; }
 
   .navlink{
     width:100%; text-align:left;
@@ -288,13 +287,13 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
    🚀 FINAL HAMBURGER FIX — On top of EVERYTHING
    ========================================================= */
 
-/* Lower any potential conflicting stacks */
+/* Lower potential conflicting stacks (content below drawer) */
 .hero, .filters-bar, .topbar, .searchbar, main, footer {
   position: relative;
   z-index: 1 !important;
 }
 
-/* THE MENU PANEL (forced) */
+/* THE MENU PANEL (forced full-screen overlay) */
 .menu {
   position: fixed !important;
   top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
@@ -313,7 +312,7 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
 }
 .menu.show { display: flex !important; }
 
-/* Backdrop */
+/* Dim backdrop */
 .menu::before{
   content:"";
   position: fixed; inset: 0;
@@ -334,8 +333,5 @@ input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin
 }
 
 /* Animations */
-@keyframes fadeSlideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeSlideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn        { from { opacity: 0; } to { opacity: 1; } }
