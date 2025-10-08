@@ -1,9 +1,6 @@
 // js/app.js
-// Auth + Nav (hamburger + mobile submenus) + helpers
-// - Redirect to home on logout
-// - Separate Sign in and Sign up modals
-// - Friendly Firebase auth errors
-// - No Firestore composite indexes (sort client-side)
+// Nav + Auth modals + shared helpers + sticky topbar + submenu mobile accordion
+// Friendly auth errors, redirect home on logout, client-side sorting.
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
@@ -12,7 +9,7 @@ import {
   onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
-  getFirestore, collection, query, where, getDocs
+  getFirestore, collection, query, where, getDocs, getDoc, doc
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 export const SUPER_ADMIN_UID = "WxvIqW6fmMVz2Us8AQBO9htcaAT2";
@@ -30,10 +27,10 @@ const app = initializeApp({
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Persist session (wrapped; no top-level await)
+// Persist session
 (async () => {
   try { await setPersistence(auth, browserSessionPersistence); }
-  catch (e) { console.warn("Auth persistence warning:", e?.message); }
+  catch (e) { console.warn("Auth persistence:", e?.message); }
 })();
 
 // ---- Nav/auth elements ----
@@ -48,140 +45,105 @@ if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 // ---- Separate modals ----
 const loginModal  = document.getElementById('loginModal');
 const signupModal = document.getElementById('signupModal');
-
 const closeLogin  = document.getElementById('closeLogin');
 const closeSignup = document.getElementById('closeSignup');
-
 const loginForm   = document.getElementById('emailLoginForm');
 const signupForm  = document.getElementById('emailSignupForm');
-
 const loginEmail = document.getElementById('loginEmail');
 const loginPassword = document.getElementById('loginPassword');
 const signupEmail = document.getElementById('signupEmail');
 const signupPassword = document.getElementById('signupPassword');
-
-// Switch links inside modals
 const goSignup = document.getElementById('goSignup');
 const goLogin  = document.getElementById('goLogin');
 
 function show(el){ el && el.classList.remove('hide'); el?.setAttribute('aria-hidden','false'); }
 function hide(el){ el && el.classList.add('hide');   el?.setAttribute('aria-hidden','true'); }
-
 function openLogin(){ show(loginModal); hide(signupModal); }
 function openSignup(){ show(signupModal); hide(loginModal); }
 function closeBoth(){ hide(loginModal); hide(signupModal); }
 
-// Open/close buttons
-loginBtn   && loginBtn.addEventListener('click', openLogin);
-signupBtn  && signupBtn.addEventListener('click', openSignup);
-closeLogin && closeLogin.addEventListener('click', ()=> hide(loginModal));
-closeSignup&& closeSignup.addEventListener('click', ()=> hide(signupModal));
+loginBtn?.addEventListener('click', openLogin);
+signupBtn?.addEventListener('click', openSignup);
+closeLogin?.addEventListener('click', ()=> hide(loginModal));
+closeSignup?.addEventListener('click', ()=> hide(signupModal));
+goSignup?.addEventListener('click', (e)=>{ e.preventDefault(); openSignup(); });
+goLogin ?.addEventListener('click', (e)=>{ e.preventDefault(); openLogin (); });
 
-// Switch between modals (fixes “Create one” not working)
-goSignup && goSignup.addEventListener('click', (e)=>{ e.preventDefault(); openSignup(); });
-goLogin  && goLogin.addEventListener('click',  (e)=>{ e.preventDefault(); openLogin();  });
-
-// Overlay click + ESC to close
+// Overlay click + ESC
 [loginModal, signupModal].forEach(m=>{
   m?.addEventListener('click', e=>{ if(e.target===m) hide(m); });
 });
-document.addEventListener('keydown', e=>{
-  if(e.key==="Escape"){ closeBoth(); }
-});
+document.addEventListener('keydown', e=>{ if(e.key==="Escape") closeBoth(); });
 
-// ---- Friendly auth error messages ----
+// Friendly auth errors
 function authMessage(err){
-  const code = String(err?.code || '').replace('auth/','');
-  switch (code) {
+  const code = String(err?.code||'').replace('auth/','');
+  switch(code){
     case 'invalid-credential':
     case 'user-not-found':
-    case 'wrong-password':
-      return 'Invalid email or password.';
-    case 'invalid-email':
-      return 'Please enter a valid email address.';
-    case 'too-many-requests':
-      return 'Too many attempts. Please try again later.';
-    case 'network-request-failed':
-      return 'Network error. Check your connection and try again.';
-    case 'email-already-in-use':
-      return 'This email is already registered. Try signing in.';
-    case 'weak-password':
-      return 'Password is too weak. Use at least 6 characters.';
-    default:
-      return err?.message || 'Something went wrong.';
+    case 'wrong-password': return 'Invalid email or password.';
+    case 'invalid-email': return 'Please enter a valid email.';
+    case 'email-already-in-use': return 'This email is already registered.';
+    case 'weak-password': return 'Password is too weak (min 6).';
+    case 'too-many-requests': return 'Too many attempts. Try again later.';
+    case 'network-request-failed': return 'Network error. Check your connection.';
+    default: return err?.message || 'Something went wrong.';
   }
 }
 
-// ---- Auth flows ----
-loginForm && loginForm.addEventListener('submit', async (e)=>{
+// Auth submit
+loginForm?.addEventListener('submit', async e=>{
   e.preventDefault();
-  try{
+  try {
     await signInWithEmailAndPassword(auth, (loginEmail?.value||'').trim(), loginPassword?.value||'');
     closeBoth();
-  }catch(err){ alert(authMessage(err)); }
+  } catch(err) { alert(authMessage(err)); }
 });
-
-signupForm && signupForm.addEventListener('submit', async (e)=>{
+signupForm?.addEventListener('submit', async e=>{
   e.preventDefault();
-  try{
+  try {
     await createUserWithEmailAndPassword(auth, (signupEmail?.value||'').trim(), signupPassword?.value||'');
     alert('Account created! You are now signed in.');
     closeBoth();
-  }catch(err){ alert(authMessage(err)); }
+  } catch(err) { alert(authMessage(err)); }
 });
 
-// ---- Logout → ALWAYS go home ----
-logoutBtn && logoutBtn.addEventListener('click', async ()=>{
-  try { await signOut(auth); }
-  finally { window.location.href = './'; }  // redirect to homepage from any page
+// Logout → go home
+logoutBtn?.addEventListener('click', async ()=>{
+  try { await signOut(auth); } finally { window.location.href = './'; }
 });
 
-// ---- Auth state → nav visibility ----
+// Auth state → nav
 onAuthStateChanged(auth, (user)=>{
-  const loggedIn = !!user;
-  if (loginBtn)     loginBtn.classList.toggle('hide', loggedIn);
-  if (signupBtn)    signupBtn.classList.toggle('hide', loggedIn);
-  if (logoutBtn)    logoutBtn.classList.toggle('hide', !loggedIn);
-  if (navDashboard) navDashboard.classList.toggle('hide', !loggedIn);
-
-  if (navAdmin){
-    navAdmin.classList.add('hide');
-    if (user && user.uid === SUPER_ADMIN_UID) navAdmin.classList.remove('hide');
-  }
+  const logged = !!user;
+  loginBtn?.classList.toggle('hide', logged);
+  signupBtn?.classList.toggle('hide', logged);
+  logoutBtn?.classList.toggle('hide', !logged);
+  navDashboard?.classList.toggle('hide', !logged);
+  navAdmin?.classList.add('hide');
+  if (user && user.uid === SUPER_ADMIN_UID) navAdmin?.classList.remove('hide');
 });
 
-// ---- Hamburger (mobile) ----
+// Hamburger + submenu (mobile)
 const hamburgerBtn = document.getElementById('hamburgerBtn');
 const navMenu = document.getElementById('navMenu');
-
-function closeMenu(){
-  if (!navMenu) return;
-  navMenu.classList.remove('show');
-  hamburgerBtn?.setAttribute('aria-expanded','false');
-}
+function closeMenu(){ navMenu?.classList.remove('show'); hamburgerBtn?.setAttribute('aria-expanded','false'); }
 function toggleMenu(){
   if (!navMenu) return;
   const show = !navMenu.classList.contains('show');
   navMenu.classList.toggle('show', show);
   hamburgerBtn?.setAttribute('aria-expanded', show ? 'true' : 'false');
 }
-hamburgerBtn && hamburgerBtn.addEventListener('click', (e)=>{
-  e.stopPropagation();
-  toggleMenu();
-});
-// close when clicking any link/button inside
-navMenu && navMenu.addEventListener('click', (e)=>{
-  if (e.target.closest('a') || e.target.closest('button')) closeMenu();
-});
-// close when clicking outside
+hamburgerBtn?.addEventListener('click', (e)=>{ e.stopPropagation(); toggleMenu(); });
+navMenu?.addEventListener('click', (e)=>{ if (e.target.closest('a') || e.target.closest('button')) closeMenu(); });
 document.addEventListener('click', (e)=>{
-  if (!navMenu || !navMenu.classList.contains('show')) return;
+  if (!navMenu?.classList.contains('show')) return;
   const inside = navMenu.contains(e.target);
   const isBtn  = hamburgerBtn && hamburgerBtn.contains(e.target);
   if (!inside && !isBtn) closeMenu();
 });
 
-// ---- Submenu toggles (mobile accordion) ----
+// Mobile submenu accordion (desktop handled by CSS hover)
 function isMobile(){ return window.matchMedia('(max-width: 768px)').matches; }
 function closeAllSubmenus(){
   document.querySelectorAll('#navMenu .submenu').forEach(s => s.classList.remove('show'));
@@ -189,13 +151,12 @@ function closeAllSubmenus(){
 }
 document.querySelectorAll('#navMenu .sub-toggle').forEach(btn=>{
   btn.addEventListener('click', (e)=>{
-    if (!isMobile()) return; // desktop handled by CSS hover
+    if (!isMobile()) return;
     e.preventDefault();
     const submenu = btn.nextElementSibling;
-    if (!submenu) return;
-    const isOpen = submenu.classList.contains('show');
+    const isOpen = submenu?.classList.contains('show');
     closeAllSubmenus();
-    if (!isOpen){
+    if (!isOpen && submenu){
       submenu.classList.add('show');
       btn.setAttribute('aria-expanded','true');
     }
@@ -207,18 +168,19 @@ document.addEventListener('click', (e)=>{
   const isHamb = hamburgerBtn && hamburgerBtn.contains(e.target);
   if (!insideMenu && !isHamb) closeAllSubmenus();
 });
-navMenu && navMenu.addEventListener('click', (e)=>{
-  if (!isMobile()) return;
-  if (e.target.closest('.submenu a')) closeAllSubmenus();
-});
 
-// ---- Helpers (no Firestore composite indexes; sort client-side) ----
+// Sticky topbar shadow
+const topbar = document.querySelector('.topbar');
+function setTopbarShadow(){ if (topbar) topbar.classList.toggle('scrolled', window.scrollY > 6); }
+setTopbarShadow();
+window.addEventListener('scroll', setTopbarShadow, { passive: true });
+
+// ---- Helpers (no composite indexes; sort client-side) ----
 export async function getApprovedListings(filters = {}){
   const q = query(collection(db,'listings'), where('status','==','approved'));
   const snap = await getDocs(q);
   let items = snap.docs.map(d=>({id:d.id, ...d.data()}));
-  items.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)); // newest first
-
+  items.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
   if (filters.type)          items = items.filter(x => x.type === filters.type);
   if (filters.propertyType)  items = items.filter(x => x.propertyType === filters.propertyType);
   if (filters.city)          items = items.filter(x => (x.city||'').toLowerCase() === String(filters.city).toLowerCase());
@@ -245,6 +207,19 @@ export async function requireAuth(){
       }
     });
   });
+}
+
+// Load by ids (used for Recently Viewed)
+export async function getListingsByIds(ids = []) {
+  const out = [];
+  for (const id of ids) {
+    try {
+      const snap = await getDoc(doc(db, 'listings', id));
+      if (snap.exists()) out.push({ id: snap.id, ...snap.data() });
+    } catch {}
+  }
+  out.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+  return out;
 }
 
 export { auth, db };
