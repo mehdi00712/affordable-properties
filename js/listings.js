@@ -1,19 +1,24 @@
 // js/listings.js
-// Renders listings with filters, favorites (♥), save search, and recently viewed row.
+// Listings + Filters + Favorites (♥) + Save Search + Recently Viewed + Saved Grid
 
 import { db, auth, requireAuth, getApprovedListings, currencyFmt, listingLink, firstImage, getListingsByIds } from './app.js';
 import {
   doc, setDoc, deleteDoc, serverTimestamp, collection, getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
 const grid = document.getElementById('listingsGrid');
 const cardTpl = document.getElementById('cardTpl');
 const filtersForm = document.getElementById('filtersForm');
 const recentRow = document.getElementById('recentRow');
 
+// Saved grid
+const savedGrid = document.getElementById('savedGrid');
+const savedEmpty = document.getElementById('savedEmpty');
+
 const $ = (sel, root=document) => root.querySelector(sel);
 
-// ----- Filters -----
+// ---------- Filters ----------
 function readFilters() {
   const type = $('#fType')?.value || '';
   const propertyType = $('#fPropType')?.value || '';
@@ -71,43 +76,52 @@ function humanizeCriteria(c) {
   return parts.join(' • ') || 'All properties';
 }
 
-// ----- Favorites -----
+// ---------- Favorites core ----------
 async function getFavoriteIds() {
   return new Promise(res=>{
     const u = auth.currentUser;
     if (!u) return res(new Set());
     (async ()=>{
       try {
-        const qRef = collection(db, 'users', u.uid, 'favorites');
-        const snap = await getDocs(qRef);
-        const set = new Set(snap.docs.map(d=>d.id));
-        res(set);
+        const snap = await getDocs(collection(db, 'users', u.uid, 'favorites'));
+        res(new Set(snap.docs.map(d=>d.id)));
       } catch { res(new Set()); }
     })();
   });
 }
-async function toggleFavorite(listingId, likeBtn) {
-  const u = await requireAuth();
-  const ref = doc(db, 'users', u.uid, 'favorites', listingId);
 
-  // True toggle: add if not active, delete if active
-  const isActive = likeBtn.classList.contains('active');
+async function addFavorite(listingId) {
+  const u = await requireAuth();
+  await setDoc(doc(db, 'users', u.uid, 'favorites', listingId), { addedAt: serverTimestamp() }, { merge: true });
+}
+async function removeFavorite(listingId) {
+  const u = await requireAuth();
+  await deleteDoc(doc(db, 'users', u.uid, 'favorites', listingId));
+}
+
+// Toggle from a listing card heart
+async function toggleFavoriteFromCard(listingId, likeBtn) {
+  const wasActive = likeBtn.classList.contains('active');
+  likeBtn.disabled = true;
   try {
-    if (isActive) { // remove
-      await deleteDoc(ref);
+    if (wasActive) {
+      await removeFavorite(listingId);
       likeBtn.classList.remove('active');
       likeBtn.innerHTML = '♡';
-    } else { // add
-      await setDoc(ref, { addedAt: serverTimestamp() }, { merge: true });
+    } else {
+      await addFavorite(listingId);
       likeBtn.classList.add('active');
       likeBtn.innerHTML = '♥';
     }
-  } catch (e) {
+    await loadSavedGrid();
+  } catch {
     alert('Could not update favorites. Please try again.');
+  } finally {
+    likeBtn.disabled = false;
   }
 }
 
-// ----- Listings render -----
+// ---------- Listings render ----------
 async function loadListings() {
   if (!grid) return;
   grid.innerHTML = '<p class="muted">Loading…</p>';
@@ -131,19 +145,19 @@ async function loadListings() {
     node.querySelector('.card-price').textContent =
       currencyFmt(l.price || 0, l.currency || 'MUR') + (l.type === 'rent' ? ' / mo' : '');
 
-    // Like button (already included in template)
+    // Heart button
     const likeBtn = node.querySelector('.card-like');
     if (favIds.has(l.id)) { likeBtn.classList.add('active'); likeBtn.innerHTML = '♥'; }
     likeBtn.addEventListener('click', (e)=>{
       e.preventDefault(); e.stopPropagation();
-      toggleFavorite(l.id, likeBtn);
+      toggleFavoriteFromCard(l.id, likeBtn);
     });
 
     grid.appendChild(node);
   }
 }
 
-// ----- Recently viewed -----
+// ---------- Recently viewed (row) ----------
 async function loadRecent() {
   if (!recentRow) return;
   const ids = JSON.parse(localStorage.getItem('recentListings') || '[]');
@@ -161,13 +175,66 @@ async function loadRecent() {
     node.querySelector('.card-meta').textContent = `${l.propertyType || '-'} • ${l.bedrooms ?? '-'} bd • ${l.city || '-'}`;
     node.querySelector('.card-price').textContent =
       currencyFmt(l.price || 0, l.currency || 'MUR') + (l.type === 'rent' ? ' / mo' : '');
-    // no heart in recent row (keep it lightweight)
+    // keep recent row light → remove heart
     node.querySelector('.card-like')?.remove();
     recentRow.appendChild(node);
   }
 }
 
-// Init from URL query
+// ---------- Saved grid (full cards with Remove) ----------
+async function loadSavedGrid() {
+  if (!savedGrid) return;
+  if (!auth.currentUser) {
+    savedGrid.innerHTML = '';
+    if (savedEmpty) { savedEmpty.style.display = 'block'; savedEmpty.textContent = 'Sign in to see your saved properties.'; }
+    return;
+  }
+
+  if (savedEmpty) savedEmpty.style.display = 'none';
+  savedGrid.innerHTML = '<p class="muted">Loading saved…</p>';
+
+  try {
+    const favSnap = await getDocs(collection(db, 'users', auth.currentUser.uid, 'favorites'));
+    const favIds = favSnap.docs.map(d => d.id);
+    if (!favIds.length) {
+      savedGrid.innerHTML = '';
+      if (savedEmpty) { savedEmpty.style.display = 'block'; savedEmpty.textContent = "You haven't saved any properties yet."; }
+      return;
+    }
+
+    const items = await getListingsByIds(favIds);
+    savedGrid.innerHTML = '';
+    for (const l of items) {
+      const node = cardTpl.content.firstElementChild.cloneNode(true);
+      node.href = listingLink(l.id);
+      node.querySelector('.card-img').style.backgroundImage = `url('${firstImage(l)}')`;
+      node.querySelector('.card-title').textContent = l.title || '(no title)';
+      node.querySelector('.card-meta').textContent =
+        `${l.propertyType || '-'} • ${l.bedrooms ?? '-'} bd • ${l.city || '-'}, ${l.country || '-'}`;
+      node.querySelector('.card-price').textContent =
+        currencyFmt(l.price || 0, l.currency || 'MUR') + (l.type === 'rent' ? ' / mo' : '');
+
+      // Replace heart with a Remove button in Saved section
+      const likeBtn = node.querySelector('.card-like');
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'btn small danger';
+      removeBtn.textContent = 'Remove';
+      removeBtn.addEventListener('click', async (e)=>{
+        e.preventDefault(); e.stopPropagation();
+        try { await removeFavorite(l.id); await loadSavedGrid(); }
+        catch { alert('Could not remove. Try again.'); }
+      });
+      likeBtn.replaceWith(removeBtn);
+
+      savedGrid.appendChild(node);
+    }
+  } catch (e) {
+    savedGrid.innerHTML = '<p class="muted">Error loading saved items.</p>';
+    console.error(e);
+  }
+}
+
+// ---------- Init ----------
 (function initFromQuery(){
   const p = new URLSearchParams(location.search);
   $('#fCity')     && p.get('city') && ($('#fCity').value = p.get('city'));
@@ -180,3 +247,7 @@ async function loadRecent() {
 
 loadListings();
 loadRecent();
+loadSavedGrid();
+
+// Refresh Saved grid on auth change
+onAuthStateChanged(auth, () => loadSavedGrid());
