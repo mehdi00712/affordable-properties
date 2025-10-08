@@ -172,3 +172,47 @@ a{color:inherit;text-decoration:none}
 .modal-switch { margin-top: 12px; font-size: 14px; color: var(--muted); text-align:center; }
 .modal-switch a { color: var(--text); text-decoration: underline; }
 .modal-switch a:hover { text-decoration: none; }
+
+/* Sticky header + shadow on scroll */
+.topbar { position: sticky; top: 0; z-index: 1000; backdrop-filter: saturate(1.1) blur(3px); background: rgba(255,255,255,.95); }
+.topbar.scrolled { box-shadow: 0 6px 20px rgba(16,24,40,.06); }
+
+/* Filters bar */
+.filters-bar {
+  position: relative;
+  z-index: 10;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(5, minmax(120px,1fr)) auto;
+}
+.filters-bar select, .filters-bar input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font: inherit;
+}
+.filters-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
+
+/* Card favorites heart */
+.card-like {
+  position: absolute; right: 10px; top: 10px;
+  background: rgba(255,255,255,.9);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 9px; cursor: pointer; user-select: none;
+}
+.card-like.active { color: #e11; border-color: #e11; }
+
+/* Recently viewed section */
+.rv-row { display: grid; grid-auto-flow: column; grid-auto-columns: 220px; gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+.rv-title { display:flex; align-items:center; gap:8px; }
+.rv-title .dot { width:8px; height:8px; border-radius:50%; background: var(--accent, #0ea5e9); }
+@media (max-width: 900px){
+  .filters-bar { grid-template-columns: repeat(2,1fr); }
+}
+
