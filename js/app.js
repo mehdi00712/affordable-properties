@@ -1,6 +1,5 @@
 // js/app.js
-// Nav + Auth modals + sticky topbar + mobile submenus + shared helpers
-// Friendly auth errors, redirect home on logout, client-side listing helpers.
+// Nav + Auth modals + mobile drawer + helpers (Firestore listing utilities)
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
@@ -14,7 +13,7 @@ import {
 
 export const SUPER_ADMIN_UID = "WxvIqW6fmMVz2Us8AQBO9htcaAT2";
 
-// ---- Firebase init ----
+// ---------------- Firebase ----------------
 const app = initializeApp({
   apiKey:"AIzaSyBA_hgPBgcwrkQJdxhIYFKd8GzmFee_l-I",
   authDomain:"affordable-properties.firebaseapp.com",
@@ -33,7 +32,7 @@ const db = getFirestore(app);
   catch (e) { console.warn("Auth persistence:", e?.message); }
 })();
 
-// ---- Nav/auth elements ----
+// ---------------- DOM refs ----------------
 const loginBtn = document.getElementById('btn-login');
 const signupBtn = document.getElementById('btn-signup');
 const logoutBtn = document.getElementById('btn-logout');
@@ -42,7 +41,7 @@ const navAdmin = document.getElementById('nav-admin');
 const yearSpan = document.getElementById('year');
 if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
-// ---- Separate modals ----
+// Modals
 const loginModal  = document.getElementById('loginModal');
 const signupModal = document.getElementById('signupModal');
 const closeLogin  = document.getElementById('closeLogin');
@@ -56,6 +55,7 @@ const signupPassword = document.getElementById('signupPassword');
 const goSignup = document.getElementById('goSignup');
 const goLogin  = document.getElementById('goLogin');
 
+// ---------------- Modal helpers ----------------
 function show(el){ el && el.classList.remove('hide'); el?.setAttribute('aria-hidden','false'); }
 function hide(el){ el && el.classList.add('hide');   el?.setAttribute('aria-hidden','true'); }
 function openLogin(){ show(loginModal); hide(signupModal); }
@@ -69,7 +69,7 @@ closeSignup?.addEventListener('click', ()=> hide(signupModal));
 goSignup?.addEventListener('click', (e)=>{ e.preventDefault(); openSignup(); });
 goLogin ?.addEventListener('click', (e)=>{ e.preventDefault(); openLogin (); });
 
-// Overlay click + ESC
+// Overlay click & ESC to close
 [loginModal, signupModal].forEach(m=>{
   m?.addEventListener('click', e=>{ if(e.target===m) hide(m); });
 });
@@ -91,7 +91,7 @@ function authMessage(err){
   }
 }
 
-// Auth submit
+// ---------------- Auth submit ----------------
 loginForm?.addEventListener('submit', async e=>{
   e.preventDefault();
   try {
@@ -99,6 +99,7 @@ loginForm?.addEventListener('submit', async e=>{
     closeBoth();
   } catch(err) { alert(authMessage(err)); }
 });
+
 signupForm?.addEventListener('submit', async e=>{
   e.preventDefault();
   try {
@@ -108,31 +109,38 @@ signupForm?.addEventListener('submit', async e=>{
   } catch(err) { alert(authMessage(err)); }
 });
 
-// Logout → go home
+// Logout → always go home
 logoutBtn?.addEventListener('click', async ()=>{
   try { await signOut(auth); } finally { window.location.href = './'; }
 });
 
-// Auth state → nav
+// Auth state → nav visibility
 onAuthStateChanged(auth, (user)=>{
   const logged = !!user;
   loginBtn?.classList.toggle('hide', logged);
   signupBtn?.classList.toggle('hide', logged);
   logoutBtn?.classList.toggle('hide', !logged);
   navDashboard?.classList.toggle('hide', !logged);
+
   navAdmin?.classList.add('hide');
   if (user && user.uid === SUPER_ADMIN_UID) navAdmin?.classList.remove('hide');
 });
 
-// Hamburger + submenu (mobile)
+// ---------------- Mobile hamburger ----------------
 const hamburgerBtn = document.getElementById('hamburgerBtn');
 const navMenu = document.getElementById('navMenu');
-function closeMenu(){ navMenu?.classList.remove('show'); hamburgerBtn?.setAttribute('aria-expanded','false'); }
+
+function closeMenu(){
+  navMenu?.classList.remove('show');
+  hamburgerBtn?.setAttribute('aria-expanded','false');
+  document.body.classList.remove('nav-open');  // lock/unlock page scroll
+}
 function toggleMenu(){
   if (!navMenu) return;
   const show = !navMenu.classList.contains('show');
   navMenu.classList.toggle('show', show);
   hamburgerBtn?.setAttribute('aria-expanded', show ? 'true' : 'false');
+  document.body.classList.toggle('nav-open', show); // body scroll lock
 }
 hamburgerBtn?.addEventListener('click', (e)=>{ e.stopPropagation(); toggleMenu(); });
 navMenu?.addEventListener('click', (e)=>{ if (e.target.closest('a') || e.target.closest('button')) closeMenu(); });
@@ -143,8 +151,8 @@ document.addEventListener('click', (e)=>{
   if (!inside && !isBtn) closeMenu();
 });
 
-// Mobile submenu accordion (desktop handled by CSS hover)
-function isMobile(){ return window.matchMedia('(max-width: 768px)').matches; }
+// Submenu accordion on mobile (desktop via CSS hover)
+function isMobile(){ return window.matchMedia('(max-width: 980px)').matches; }
 function closeAllSubmenus(){
   document.querySelectorAll('#navMenu .submenu').forEach(s => s.classList.remove('show'));
   document.querySelectorAll('#navMenu .sub-toggle[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded','false'));
@@ -154,12 +162,9 @@ document.querySelectorAll('#navMenu .sub-toggle').forEach(btn=>{
     if (!isMobile()) return;
     e.preventDefault();
     const submenu = btn.nextElementSibling;
-    const isOpen = submenu?.classList.contains('show');
+    const open = submenu?.classList.contains('show');
     closeAllSubmenus();
-    if (!isOpen && submenu){
-      submenu.classList.add('show');
-      btn.setAttribute('aria-expanded','true');
-    }
+    if (!open && submenu){ submenu.classList.add('show'); btn.setAttribute('aria-expanded','true'); }
   });
 });
 document.addEventListener('click', (e)=>{
@@ -175,12 +180,14 @@ function setTopbarShadow(){ if (topbar) topbar.classList.toggle('scrolled', wind
 setTopbarShadow();
 window.addEventListener('scroll', setTopbarShadow, { passive: true });
 
-// ---- Helpers (no composite indexes; sort client-side) ----
+// ---------------- Shared listing helpers ----------------
 export async function getApprovedListings(filters = {}){
+  // Query only approved; sort client-side (no composite indexes required)
   const q = query(collection(db,'listings'), where('status','==','approved'));
   const snap = await getDocs(q);
   let items = snap.docs.map(d=>({id:d.id, ...d.data()}));
   items.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+
   if (filters.type)          items = items.filter(x => x.type === filters.type);
   if (filters.propertyType)  items = items.filter(x => x.propertyType === filters.propertyType);
   if (filters.city)          items = items.filter(x => (x.city||'').toLowerCase() === String(filters.city).toLowerCase());
@@ -188,6 +195,7 @@ export async function getApprovedListings(filters = {}){
   if (filters.maxPrice)      items = items.filter(x => Number(x.price) <= Number(filters.maxPrice));
   return items;
 }
+
 export function currencyFmt(v, code='MUR'){
   try { return new Intl.NumberFormat(undefined,{style:'currency',currency:code,maximumFractionDigits:0}).format(v); }
   catch { return `${v} ${code}`; }
@@ -209,7 +217,7 @@ export async function requireAuth(){
   });
 }
 
-// Load by ids (used for Recently Viewed & Saved grid)
+// Load listings by ids (for Saved & Recently Viewed)
 export async function getListingsByIds(ids = []) {
   const out = [];
   for (const id of ids) {
