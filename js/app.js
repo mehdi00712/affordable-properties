@@ -1,6 +1,6 @@
 // js/app.js
-// Nav + Auth modals + shared helpers + sticky topbar + submenu mobile accordion
-// Friendly auth errors, redirect home on logout, client-side sorting.
+// Nav + Auth modals + sticky topbar + mobile submenus + shared helpers
+// Friendly auth errors, redirect home on logout, client-side listing helpers.
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
@@ -209,7 +209,7 @@ export async function requireAuth(){
   });
 }
 
-// Load by ids (used for Recently Viewed)
+// Load by ids (used for Recently Viewed & Saved grid)
 export async function getListingsByIds(ids = []) {
   const out = [];
   for (const id of ids) {
