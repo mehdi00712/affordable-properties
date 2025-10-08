@@ -1,215 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>etoile property – Buy & Rent</title>
-  <link rel="stylesheet" href="style.css"/>
-</head>
-<body>
-<!-- Top bar -->
 <header class="topbar">
   <div class="brand">
     <a href="./" class="logo"><img src="etoile.jpg" alt="etoile property" /></a>
   </div>
 
-  <!-- Hamburger button (mobile only) -->
+  <!-- Hamburger button -->
   <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">☰</button>
-
-  <!-- One menu with all links/buttons -->
-  <nav class="menu" id="navMenu" aria-label="Primary">
-    <!-- BUY -->
-    <div class="has-sub">
-      <button class="navlink sub-toggle" aria-expanded="false">Buy</button>
-      <div class="submenu">
-        <a href="./?type=sale">Property for sale</a>
-        <a href="#" class="muted">Offplan property</a>
-        <a href="#" class="muted">Property valuation</a>
-        <a href="#" class="muted">Investors</a>
-        <a href="#" class="muted">Mortgage</a>
-        <a href="./?propertyType=expat" class="muted">Expat Approved</a>
-        <a href="./?propertyType=commercial">Commercial</a>
-      </div>
-    </div>
-
-    <!-- RENT -->
-    <div class="has-sub">
-      <button class="navlink sub-toggle" aria-expanded="false">Rent</button>
-      <div class="submenu">
-        <a href="./?type=rent">Property to rent</a>
-        <a href="#" class="muted">Student property to rent</a>
-        <a href="#" class="muted">Holiday homes</a>
-        <a href="#" class="muted">Short term rentals</a>
-        <a href="./?type=rent&propertyType=commercial">Commercial</a>
-      </div>
-    </div>
-
-    <!-- PROPERTY ABROAD -->
-    <div class="has-sub">
-      <button class="navlink sub-toggle" aria-expanded="false">Property Abroad</button>
-      <div class="submenu cols">
-        <a href="#" class="muted">All Countries</a>
-        <a href="#" class="muted">UAE</a>
-        <a href="#" class="muted">UK</a>
-        <a href="#" class="muted">Spain</a>
-        <a href="#" class="muted">France</a>
-        <a href="#" class="muted">Greece</a>
-        <a href="#" class="muted">Sell Overseas Property</a>
-      </div>
-    </div>
-
-    <!-- EVENTS (hidden for now) -->
-    <div class="has-sub hidden">
-      <button class="navlink sub-toggle" aria-expanded="false">Events</button>
-      <div class="submenu">
-        <a href="#" class="muted">Dubai Roadshow</a>
-      </div>
-    </div>
-
-    <hr/>
-
-    <!-- Auth / actions -->
-    <a id="nav-dashboard" class="btn ghost hide" href="dashboard.html">Post a property</a>
-    <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
-    <button id="btn-login" class="btn pill">Sign in</button>
-    <button id="btn-signup" class="btn pill">Sign up</button>
-    <button id="btn-logout" class="btn pill hide">Logout</button>
-  </nav>
 </header>
 
-<!-- Hero with big search -->
-<section class="hero">
-  <img class="hero-bg" src="https://images.unsplash.com/photo-1501183638710-841dd1904471?q=80&w=1960&auto=format&fit=crop" alt="">
-  <div class="hero-inner">
-    <h1><span class="accent">believe</span> in finding it</h1>
-    <p class="sub">Search properties for sale and to rent</p>
-
-    <form id="bigSearch" class="searchbar">
-      <input id="qCity" placeholder="e.g. Port Louis, Dubai"/>
-      <div class="pills">
-        <input type="radio" name="mode" id="sale" value="sale" checked>
-        <label for="sale">For sale</label>
-        <input type="radio" name="mode" id="rent" value="rent">
-        <label for="rent">To rent</label>
-      </div>
-      <button class="btn primary" type="submit">Search</button>
-    </form>
-  </div>
-</section>
-
-<!-- Filters bar -->
-<section class="wrap" style="margin-top:-38px">
-  <form id="filtersForm" class="filters-bar">
-    <select id="fCity">
-      <option value="">All cities</option>
-      <option>Port Louis</option>
-      <option>Dubai</option>
-      <option>Curepipe</option>
-      <option>Quatre Bornes</option>
-    </select>
-
-    <select id="fType">
-      <option value="">Buy/Rent</option>
-      <option value="sale">For sale</option>
-      <option value="rent">To rent</option>
-    </select>
-
-    <select id="fPropType">
-      <option value="">Any type</option>
-      <option value="apartment">Apartment</option>
-      <option value="house">House</option>
-      <option value="villa">Villa</option>
-      <option value="commercial">Commercial</option>
-    </select>
-
-    <select id="fBeds">
-      <option value="">Beds</option>
-      <option value="1">1+</option>
-      <option value="2">2+</option>
-      <option value="3">3+</option>
-      <option value="4">4+</option>
-      <option value="5">5+</option>
-    </select>
-
-    <div style="display:flex; gap:8px">
-      <input id="fMin" type="number" min="0" placeholder="Min price" />
-      <input id="fMax" type="number" min="0" placeholder="Max price" />
+<!-- ⬇️ Drawer & backdrop are OUTSIDE the header -->
+<div id="navBackdrop" class="nav-backdrop hide" aria-hidden="true"></div>
+<nav class="menu" id="navMenu" aria-label="Primary" aria-hidden="true">
+  <!-- BUY -->
+  <div class="has-sub">
+    <button class="navlink sub-toggle" aria-expanded="false">Buy</button>
+    <div class="submenu">
+      <a href="./?type=sale">Property for sale</a>
+      <a href="#" class="muted">Offplan property</a>
+      <a href="#" class="muted">Property valuation</a>
+      <a href="#" class="muted">Investors</a>
+      <a href="#" class="muted">Mortgage</a>
+      <a href="./?propertyType=expat" class="muted">Expat Approved</a>
+      <a href="./?propertyType=commercial">Commercial</a>
     </div>
+  </div>
 
-    <div class="filters-actions">
-      <button type="submit" class="btn primary">Apply</button>
-      <button type="button" id="btnSaveSearch" class="btn outline">Save this search</button>
-      <button type="button" id="btnReset" class="btn">Reset</button>
+  <!-- RENT -->
+  <div class="has-sub">
+    <button class="navlink sub-toggle" aria-expanded="false">Rent</button>
+    <div class="submenu">
+      <a href="./?type=rent">Property to rent</a>
+      <a href="#" class="muted">Student property to rent</a>
+      <a href="#" class="muted">Holiday homes</a>
+      <a href="#" class="muted">Short term rentals</a>
+      <a href="./?type=rent&propertyType=commercial">Commercial</a>
     </div>
-  </form>
-</section>
-
-<!-- Listings -->
-<main class="wrap mt">
-  <h2 class="section-title">Latest listings</h2>
-  <div id="listingsGrid" class="grid"></div>
-</main>
-
-<!-- Recently viewed -->
-<section class="wrap mt">
-  <div class="rv-title">
-    <span class="dot"></span><h2 class="section-title" style="margin:0">Recently viewed</h2>
   </div>
-  <div id="recentRow" class="rv-row"></div>
-</section>
 
-<!-- Saved properties -->
-<section class="wrap mt">
-  <h2 class="section-title">Saved properties</h2>
-  <div id="savedGrid" class="grid"></div>
-  <p id="savedEmpty" class="muted" style="display:none">You haven't saved any properties yet.</p>
-</section>
-
-<!-- Card template -->
-<template id="cardTpl">
-  <a class="card" href="#">
-    <div class="card-img"></div>
-    <button class="card-like" type="button">♡</button>
-    <div class="card-body">
-      <h3 class="card-title"></h3>
-      <p class="card-meta"></p>
-      <p class="card-price"></p>
+  <!-- PROPERTY ABROAD -->
+  <div class="has-sub">
+    <button class="navlink sub-toggle" aria-expanded="false">Property Abroad</button>
+    <div class="submenu cols">
+      <a href="#" class="muted">All Countries</a>
+      <a href="#" class="muted">UAE</a>
+      <a href="#" class="muted">UK</a>
+      <a href="#" class="muted">Spain</a>
+      <a href="#" class="muted">France</a>
+      <a href="#" class="muted">Greece</a>
+      <a href="#" class="muted">Sell Overseas Property</a>
     </div>
-  </a>
-</template>
-
-<footer class="footer">© <span id="year"></span> etoile property</footer>
-
-<!-- Login modal -->
-<div id="loginModal" class="modal hide" aria-hidden="true">
-  <div class="modal-dialog">
-    <button class="modal-close" id="closeLogin" aria-label="Close">×</button>
-    <h3 class="modal-title">Sign in</h3>
-    <form id="emailLoginForm" class="stack">
-      <input id="loginEmail" type="email" placeholder="you@example.com" required />
-      <input id="loginPassword" type="password" placeholder="Password" required />
-      <button type="submit" class="btn primary">Sign in</button>
-    </form>
-    <p class="modal-switch">Don’t have an account? <a href="#" id="goSignup">Create one</a></p>
   </div>
-</div>
 
-<!-- Signup modal -->
-<div id="signupModal" class="modal hide" aria-hidden="true">
-  <div class="modal-dialog">
-    <button class="modal-close" id="closeSignup" aria-label="Close">×</button>
-    <h3 class="modal-title">Create account</h3>
-    <form id="emailSignupForm" class="stack">
-      <input id="signupEmail" type="email" placeholder="newuser@example.com" required />
-      <input id="signupPassword" type="password" placeholder="Password (min 6)" required />
-      <button type="submit" class="btn">Sign up</button>
-    </form>
-    <p class="modal-switch">Already have an account? <a href="#" id="goLogin">Sign in</a></p>
-  </div>
-</div>
+  <hr/>
 
-<!-- Scripts -->
-<script type="module" src="js/app.js"></script>
-<script type="module" src="js/listings.js"></script>
-</body>
-</html>
+  <!-- Auth / actions -->
+  <a id="nav-dashboard" class="btn ghost hide" href="dashboard.html">Post a property</a>
+  <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
+  <button id="btn-login" class="btn pill">Sign in</button>
+  <button id="btn-signup" class="btn pill">Sign up</button>
+  <button id="btn-logout" class="btn pill hide">Logout</button>
+</nav>
