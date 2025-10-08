@@ -6,7 +6,7 @@
   <title>etoile property – Buy & Rent</title>
   <link rel="stylesheet" href="style.css"/>
 
-  <!-- Leaflet (for draw-your-area modal) -->
+  <!-- Leaflet (only needed if you use draw-area modal) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
@@ -22,7 +22,7 @@
   <!-- Hamburger button (mobile only) -->
   <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">☰</button>
 
-  <!-- One menu with all links/buttons (same structure as admin.html) -->
+  <!-- One menu with all links/buttons -->
   <nav class="menu" id="navMenu" aria-label="Primary">
     <!-- BUY -->
     <div class="has-sub">
@@ -107,16 +107,72 @@
   </div>
 </section>
 
+<!-- Filters bar -->
+<section class="wrap" style="margin-top:-38px">
+  <form id="filtersForm" class="filters-bar">
+    <select id="fCity">
+      <option value="">All cities</option>
+      <option>Port Louis</option>
+      <option>Dubai</option>
+      <option>Curepipe</option>
+      <option>Quatre Bornes</option>
+    </select>
+
+    <select id="fType">
+      <option value="">Buy/Rent</option>
+      <option value="sale">For sale</option>
+      <option value="rent">To rent</option>
+    </select>
+
+    <select id="fPropType">
+      <option value="">Any type</option>
+      <option value="apartment">Apartment</option>
+      <option value="house">House</option>
+      <option value="villa">Villa</option>
+      <option value="commercial">Commercial</option>
+    </select>
+
+    <select id="fBeds">
+      <option value="">Beds</option>
+      <option value="1">1+</option>
+      <option value="2">2+</option>
+      <option value="3">3+</option>
+      <option value="4">4+</option>
+      <option value="5">5+</option>
+    </select>
+
+    <div style="display:flex; gap:8px">
+      <input id="fMin" type="number" min="0" placeholder="Min price" />
+      <input id="fMax" type="number" min="0" placeholder="Max price" />
+    </div>
+
+    <div class="filters-actions">
+      <button type="submit" class="btn primary">Apply</button>
+      <button type="button" id="btnSaveSearch" class="btn outline">Save this search</button>
+      <button type="button" id="btnReset" class="btn">Reset</button>
+    </div>
+  </form>
+</section>
+
 <!-- Listings -->
 <main class="wrap mt">
   <h2 class="section-title">Latest listings</h2>
   <div id="listingsGrid" class="grid"></div>
 </main>
 
+<!-- Recently viewed -->
+<section class="wrap mt">
+  <div class="rv-title">
+    <span class="dot"></span><h2 class="section-title" style="margin:0">Recently viewed</h2>
+  </div>
+  <div id="recentRow" class="rv-row"></div>
+</section>
+
 <!-- Card template -->
 <template id="cardTpl">
   <a class="card" href="#">
     <div class="card-img"></div>
+    <button class="card-like" type="button">♡</button>
     <div class="card-body">
       <h3 class="card-title"></h3>
       <p class="card-meta"></p>
@@ -127,7 +183,7 @@
 
 <footer class="footer">© <span id="year"></span> etoile property</footer>
 
-<!-- Login modal (separate) -->
+<!-- Login modal -->
 <div id="loginModal" class="modal hide" aria-hidden="true">
   <div class="modal-dialog">
     <button class="modal-close" id="closeLogin" aria-label="Close">×</button>
@@ -141,7 +197,7 @@
   </div>
 </div>
 
-<!-- Signup modal (separate) -->
+<!-- Signup modal -->
 <div id="signupModal" class="modal hide" aria-hidden="true">
   <div class="modal-dialog">
     <button class="modal-close" id="closeSignup" aria-label="Close">×</button>
@@ -155,7 +211,7 @@
   </div>
 </div>
 
-<!-- Draw-on-map modal -->
+<!-- Draw-on-map modal (optional; if using map-search.js) -->
 <div id="mapDrawModal" class="modal hide">
   <div class="modal-dialog" style="width:min(920px,95vw);padding:0">
     <button class="modal-close" id="closeDraw">×</button>
@@ -172,6 +228,6 @@
 <!-- Scripts -->
 <script type="module" src="js/app.js"></script>
 <script type="module" src="js/listings.js"></script>
-<script type="module" src="js/map-search.js"></script>
+<!-- <script type="module" src="js/map-search.js"></script> Optional -->
 </body>
 </html>
