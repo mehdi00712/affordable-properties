@@ -2,10 +2,10 @@
    Etoile Property — style.css (mobile-first)
    ========================================= */
 
-/* ---- Brand system (edit these 2) ---- */
+/* -------- Brand system (edit these 2) -------- */
 :root{
   --brand: #0f6aa9;        /* << set to your logo color */
-  --accent: #12a8ff;       /* lighter accent for highlights */
+  --accent: #12a8ff;       /* lighter accent */
 
   --bg: #ffffff;
   --text: #0f172a;
@@ -26,7 +26,7 @@
   --topbar-h: 64px;
 }
 
-/* ---- Base / reset ---- */
+/* -------------- Base / reset -------------- */
 *{ box-sizing: border-box; }
 html,body{ margin:0; padding:0; }
 body{
@@ -40,7 +40,6 @@ body{
 a{ color: inherit; text-decoration: none; }
 a:hover{ text-decoration: underline; }
 img{ max-width:100%; height:auto; display:block; }
-
 .wrap{ width: var(--container); margin: 0 auto; }
 .mt{ margin-top: 24px; }
 .hide{ display:none !important; }
@@ -50,7 +49,7 @@ hr{ border:none; border-top:1px solid var(--line); }
 /* Lock scroll when mobile menu open */
 body.nav-open { overflow: hidden; }
 
-/* ---- Buttons ---- */
+/* -------------- Buttons -------------- */
 .btn{
   appearance: none;
   border: 1px solid var(--line);
@@ -71,9 +70,9 @@ body.nav-open { overflow: hidden; }
 .btn.danger{ border-color:#ef4444; color:#ef4444; }
 .btn.danger:hover{ background:#fee2e2; }
 
-/* ---- Topbar / Nav ---- */
+/* -------------- Topbar / Nav -------------- */
 .topbar{
-  position: sticky; top: 0; z-index: 500;
+  position: sticky; top: 0; z-index: 500;      /* below drawer & modal */
   background: rgba(255,255,255,.96);
   backdrop-filter: saturate(1.1) blur(3px);
   border-bottom: 1px solid var(--line);
@@ -96,7 +95,7 @@ body.nav-open { overflow: hidden; }
 .menu{ display:flex; align-items:center; gap:14px; padding-right:10px; }
 .menu > a, .menu > button.navlink{ text-decoration:none; color:var(--text); }
 
-/* Submenus */
+/* Submenus (desktop) */
 .navlink{ background:none; border:none; font:inherit; padding:10px 12px; cursor:pointer; }
 .has-sub{ position:relative; }
 .submenu{
@@ -111,33 +110,33 @@ body.nav-open { overflow: hidden; }
 .has-sub:hover .submenu{ display:block; } /* desktop hover */
 .hidden{ display:none !important; }
 
-/* ---- Mobile menu: full-screen overlay ---- */
+/* ---------- Mobile menu: full-screen overlay ---------- */
 @media (max-width: 980px){
   .menu{
     position: fixed;
-    inset: 0;                                         /* cover whole viewport */
-    padding: calc(var(--topbar-h) + env(safe-area-inset-top)) 12px 12px 12px;
-    background:#ffffff;
+    inset: 0;                                     /* cover the whole viewport */
+    padding: calc(env(safe-area-inset-top) + var(--topbar-h)) 12px 12px;
+    background: #ffffff;                          /* solid panel */
     display: none;
     flex-direction: column;
     gap: 6px;
     overflow: auto;
     border-top: 1px solid var(--line);
-    z-index: 3000;                                    /* above hero & filters */
+    z-index: 3000;                                /* above hero & filters */
   }
-  .menu.show{ display:flex; }
+  .menu.show{ display: flex; }
 
   .has-sub{ width:100%; }
   .has-sub .submenu{
-    position: static; display: none; border: none; box-shadow: none;
-    padding: 6px 8px;
+    position: static; display:none; border:none; box-shadow:none;
+    padding: 6px 8px; z-index: 1;
   }
-  .has-sub .submenu.show{ display: block; }
-  .has-sub:hover .submenu{ display: none; }          /* disable hover on mobile */
+  .has-sub .submenu.show{ display:block; }
+  .has-sub:hover .submenu{ display:none; } /* disable hover on mobile */
 
   .navlink{
-    width: 100%; text-align: left;
-    border: 1px solid var(--line); border-radius: var(--radius-sm);
+    width:100%; text-align:left;
+    border:1px solid var(--line); border-radius:var(--radius-sm);
     background:#fff;
   }
   .menu hr{
@@ -145,24 +144,25 @@ body.nav-open { overflow: hidden; }
   }
 }
 
-/* ---- Hero ---- */
+/* -------------- Hero -------------- */
 .hero{ position:relative; display:flex; align-items:center; min-height: 340px; }
 @media (max-width: 600px){ .hero{ min-height: 260px; } }
 .hero-bg{
   position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
-  filter: brightness(.82); z-index: 0;
+  filter: brightness(.82);
+  z-index: 0;
 }
 .hero-inner{ position:relative; z-index: 1; width:var(--container); margin:0 auto; color:#fff; }
 .hero h1{ font-size: clamp(26px, 6vw, 48px); margin:0 0 8px; }
 .hero h1 .accent{ color: var(--accent); }
 .hero .sub{ margin:0 0 16px; color:#e5eef8; }
 
-/* Big search bar */
+/* big search bar */
 .searchbar{
   display:flex; gap:8px; align-items:center;
   background:#fff; border-radius: 999px; padding: 8px; box-shadow: var(--shadow-md);
   width: min(860px, 100%);
-  z-index: 1;                                        /* below mobile menu */
+  z-index: 1; /* stays below mobile menu (z-index:3000) */
 }
 .searchbar input{
   flex:1; border:none; outline:none; font:inherit; padding: 10px 12px; border-radius:999px;
@@ -178,9 +178,9 @@ body.nav-open { overflow: hidden; }
   .searchbar .btn{ width: 100%; }
 }
 
-/* ---- Filters bar (sticky) ---- */
+/* -------------- Filters bar (sticky) -------------- */
 .filters-bar{
-  position: sticky; top: 0; z-index: 100;            /* menu is 3000 */
+  position: sticky; top: 0; z-index: 100; /* menu is 3000 */
   background:#fff; border:1px solid var(--line);
   border-radius: var(--radius); padding:10px;
   box-shadow: var(--shadow-xs);
@@ -205,7 +205,7 @@ body.nav-open { overflow: hidden; }
   .filters-bar{ grid-template-columns: 1fr; }
 }
 
-/* ---- Cards & grids ---- */
+/* -------------- Cards & grids -------------- */
 .grid{ display:grid; gap:14px; grid-template-columns: repeat(3, 1fr); }
 @media (max-width: 980px){ .grid{ grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 600px){ .grid{ grid-template-columns: 1fr; } }
@@ -232,7 +232,7 @@ body.nav-open { overflow: hidden; }
 }
 .card-like.active{ color:#e11; border-color:#e11; }
 
-/* ---- Recently viewed scroller ---- */
+/* -------------- Recently viewed scroller -------------- */
 .rv-title{ display:flex; align-items:center; gap:8px; }
 .rv-title .dot{ width:8px; height:8px; border-radius:50%; background:var(--accent); }
 .rv-row{
@@ -241,7 +241,7 @@ body.nav-open { overflow: hidden; }
 }
 @media (max-width: 420px){ .rv-row{ grid-auto-columns: 220px; } }
 
-/* ---- Panels (admin/detail) ---- */
+/* -------------- Panels (admin/detail) -------------- */
 .section-title{ margin:0 0 12px; }
 .panel{
   border:1px solid var(--line); border-radius: var(--radius);
@@ -249,18 +249,18 @@ body.nav-open { overflow: hidden; }
 }
 .stack > * + *{ margin-top:10px; }
 
-/* ---- Footer ---- */
+/* -------------- Footer -------------- */
 .footer{
   margin-top:40px; border-top:1px solid var(--line);
   padding:18px 12px; text-align:center; color:var(--muted);
 }
 
-/* ---- Modals ---- */
+/* -------------- Modals -------------- */
 .modal{
   position: fixed; inset: 0;
   background: rgba(0,0,0,.45);
   display:flex; align-items:center; justify-content:center;
-  z-index: 9999; /* above filters/topbar/menu */
+  z-index: 9999; /* above everything */
 }
 .modal.hide{ display:none; }
 .modal-dialog{
@@ -275,10 +275,10 @@ body.nav-open { overflow: hidden; }
 }
 .modal a{ color:var(--brand); text-decoration: underline; }
 
-/* ---- Inputs ---- */
+/* -------------- Inputs -------------- */
 input, select, textarea{ font:inherit; }
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
 
-/* ---- Tiny helpers ---- */
+/* -------------- Tiny helpers -------------- */
 .badge{ display:inline-block; padding:4px 10px; border:1px solid var(--line); border-radius:999px; font-size:12px; }
