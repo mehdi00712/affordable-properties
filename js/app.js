@@ -1,4 +1,6 @@
-// js/app.js — nav/auth + drawer with backdrop + Firestore helpers
+// js/app.js
+// Nav + Auth modals + mobile drawer (with body scroll lock) + shared helpers
+// Friendly auth errors, redirect home on logout, client-side listing helpers.
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
@@ -12,7 +14,7 @@ import {
 
 export const SUPER_ADMIN_UID = "WxvIqW6fmMVz2Us8AQBO9htcaAT2";
 
-// Firebase
+// ---- Firebase init ----
 const app = initializeApp({
   apiKey:"AIzaSyBA_hgPBgcwrkQJdxhIYFKd8GzmFee_l-I",
   authDomain:"affordable-properties.firebaseapp.com",
@@ -24,9 +26,14 @@ const app = initializeApp({
 });
 const auth = getAuth(app);
 const db = getFirestore(app);
-(async()=>{ try{ await setPersistence(auth, browserSessionPersistence);}catch(e){ console.warn(e?.message);} })();
 
-// Basic refs
+// Persist session for the tab
+(async () => {
+  try { await setPersistence(auth, browserSessionPersistence); }
+  catch (e) { console.warn("Auth persistence:", e?.message); }
+})();
+
+// ---- Nav/auth elements ----
 const loginBtn = document.getElementById('btn-login');
 const signupBtn = document.getElementById('btn-signup');
 const logoutBtn = document.getElementById('btn-logout');
@@ -35,7 +42,7 @@ const navAdmin = document.getElementById('nav-admin');
 const yearSpan = document.getElementById('year');
 if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
-// Modals
+// ---- Separate modals ----
 const loginModal  = document.getElementById('loginModal');
 const signupModal = document.getElementById('signupModal');
 const closeLogin  = document.getElementById('closeLogin');
@@ -49,20 +56,24 @@ const signupPassword = document.getElementById('signupPassword');
 const goSignup = document.getElementById('goSignup');
 const goLogin  = document.getElementById('goLogin');
 
-// Modal helpers
 function show(el){ el && el.classList.remove('hide'); el?.setAttribute('aria-hidden','false'); }
 function hide(el){ el && el.classList.add('hide');   el?.setAttribute('aria-hidden','true'); }
 function openLogin(){ show(loginModal); hide(signupModal); }
 function openSignup(){ show(signupModal); hide(loginModal); }
 function closeBoth(){ hide(loginModal); hide(signupModal); }
 
+// Open/close handlers
 loginBtn?.addEventListener('click', openLogin);
 signupBtn?.addEventListener('click', openSignup);
 closeLogin?.addEventListener('click', ()=> hide(loginModal));
 closeSignup?.addEventListener('click', ()=> hide(signupModal));
-goSignup?.addEventListener('click', e=>{ e.preventDefault(); openSignup(); });
-goLogin ?.addEventListener('click', e=>{ e.preventDefault(); openLogin (); });
-[loginModal, signupModal].forEach(m=> m?.addEventListener('click', e=>{ if(e.target===m) hide(m); }));
+goSignup?.addEventListener('click', (e)=>{ e.preventDefault(); openSignup(); });
+goLogin ?.addEventListener('click', (e)=>{ e.preventDefault(); openLogin (); });
+
+// Overlay click + ESC
+[loginModal, signupModal].forEach(m=>{
+  m?.addEventListener('click', e=>{ if(e.target===m) hide(m); });
+});
 document.addEventListener('keydown', e=>{ if(e.key==="Escape") closeBoth(); });
 
 // Friendly auth errors
@@ -84,26 +95,26 @@ function authMessage(err){
 // Auth submit
 loginForm?.addEventListener('submit', async e=>{
   e.preventDefault();
-  try{
+  try {
     await signInWithEmailAndPassword(auth, (loginEmail?.value||'').trim(), loginPassword?.value||'');
     closeBoth();
-  }catch(err){ alert(authMessage(err)); }
+  } catch(err) { alert(authMessage(err)); }
 });
 signupForm?.addEventListener('submit', async e=>{
   e.preventDefault();
-  try{
+  try {
     await createUserWithEmailAndPassword(auth, (signupEmail?.value||'').trim(), signupPassword?.value||'');
     alert('Account created! You are now signed in.');
     closeBoth();
-  }catch(err){ alert(authMessage(err)); }
+  } catch(err) { alert(authMessage(err)); }
 });
 
-// Logout → home
+// Logout → go home from any page
 logoutBtn?.addEventListener('click', async ()=>{
-  try{ await signOut(auth);}finally{ window.location.href = './'; }
+  try { await signOut(auth); } finally { window.location.href = './'; }
 });
 
-// Auth state → nav visibility
+// Auth state → nav
 onAuthStateChanged(auth, (user)=>{
   const logged = !!user;
   loginBtn?.classList.toggle('hide', logged);
@@ -114,100 +125,109 @@ onAuthStateChanged(auth, (user)=>{
   if (user && user.uid === SUPER_ADMIN_UID) navAdmin?.classList.remove('hide');
 });
 
-// Drawer + backdrop
+// ---- Hamburger + submenu (mobile) ----
 const hamburgerBtn = document.getElementById('hamburgerBtn');
 const navMenu = document.getElementById('navMenu');
-const navBackdrop = document.getElementById('navBackdrop');
 
-function openMenu(){
-  navMenu?.classList.add('show');
-  navMenu?.setAttribute('aria-hidden','false');
-  navBackdrop?.classList.remove('hide');
-  navBackdrop?.setAttribute('aria-hidden','false');
-  hamburgerBtn?.setAttribute('aria-expanded','true');
-  document.body.classList.add('nav-open'); // lock scroll
-}
 function closeMenu(){
   navMenu?.classList.remove('show');
-  navMenu?.setAttribute('aria-hidden','true');
-  navBackdrop?.classList.add('hide');
-  navBackdrop?.setAttribute('aria-hidden','true');
   hamburgerBtn?.setAttribute('aria-expanded','false');
-  document.body.classList.remove('nav-open');
+  document.body.classList.remove('nav-open'); // lock/unlock body scroll
 }
 function toggleMenu(){
   if (!navMenu) return;
-  if (navMenu.classList.contains('show')) closeMenu(); else openMenu();
+  const show = !navMenu.classList.contains('show');
+  navMenu.classList.toggle('show', show);
+  hamburgerBtn?.setAttribute('aria-expanded', show ? 'true' : 'false');
+  document.body.classList.toggle('nav-open', show); // lock/unlock body scroll
 }
-hamburgerBtn?.addEventListener('click', e=>{ e.stopPropagation(); toggleMenu(); });
-navBackdrop?.addEventListener('click', closeMenu);
-navMenu?.addEventListener('click', e=>{
-  if (e.target.closest('a') || e.target.closest('button.btn') || e.target.closest('.navlink') && !e.target.classList.contains('sub-toggle')){
-    closeMenu();
-  }
-});
-document.addEventListener('click', e=>{
+hamburgerBtn?.addEventListener('click', (e)=>{ e.stopPropagation(); toggleMenu(); });
+navMenu?.addEventListener('click', (e)=>{ if (e.target.closest('a') || e.target.closest('button')) closeMenu(); });
+document.addEventListener('click', (e)=>{
   if (!navMenu?.classList.contains('show')) return;
   const inside = navMenu.contains(e.target);
-  const isBtn = hamburgerBtn && hamburgerBtn.contains(e.target);
+  const isBtn  = hamburgerBtn && hamburgerBtn.contains(e.target);
   if (!inside && !isBtn) closeMenu();
 });
 
-// Mobile submenu accordion
+// Mobile submenu accordion (desktop handled by CSS hover)
 function isMobile(){ return window.matchMedia('(max-width: 980px)').matches; }
 function closeAllSubmenus(){
   document.querySelectorAll('#navMenu .submenu').forEach(s => s.classList.remove('show'));
   document.querySelectorAll('#navMenu .sub-toggle[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded','false'));
 }
 document.querySelectorAll('#navMenu .sub-toggle').forEach(btn=>{
-  btn.addEventListener('click', e=>{
-    if (!isMobile()) return; e.preventDefault();
+  btn.addEventListener('click', (e)=>{
+    if (!isMobile()) return;
+    e.preventDefault();
     const submenu = btn.nextElementSibling;
-    const open = submenu?.classList.contains('show');
+    const isOpen = submenu?.classList.contains('show');
     closeAllSubmenus();
-    if (!open && submenu){ submenu.classList.add('show'); btn.setAttribute('aria-expanded','true'); }
+    if (!isOpen && submenu){
+      submenu.classList.add('show');
+      btn.setAttribute('aria-expanded','true');
+    }
   });
 });
+document.addEventListener('click', (e)=>{
+  if (!isMobile()) return;
+  const insideMenu = navMenu && navMenu.contains(e.target);
+  const isHamb = hamburgerBtn && hamburgerBtn.contains(e.target);
+  if (!insideMenu && !isHamb) closeAllSubmenus();
+});
 
-// Topbar shadow
+// Sticky topbar shadow
 const topbar = document.querySelector('.topbar');
 function setTopbarShadow(){ if (topbar) topbar.classList.toggle('scrolled', window.scrollY > 6); }
-setTopbarShadow(); window.addEventListener('scroll', setTopbarShadow, {passive:true});
+setTopbarShadow();
+window.addEventListener('scroll', setTopbarShadow, { passive: true });
 
-// -------- Shared listing helpers --------
+// ---- Helpers (no composite indexes; sort client-side) ----
 export async function getApprovedListings(filters = {}){
   const q = query(collection(db,'listings'), where('status','==','approved'));
   const snap = await getDocs(q);
   let items = snap.docs.map(d=>({id:d.id, ...d.data()}));
   items.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-  if (filters.type)         items = items.filter(x => x.type === filters.type);
-  if (filters.propertyType) items = items.filter(x => x.propertyType === filters.propertyType);
-  if (filters.city)         items = items.filter(x => (x.city||'').toLowerCase() === String(filters.city).toLowerCase());
-  if (filters.minPrice)     items = items.filter(x => Number(x.price) >= Number(filters.minPrice));
-  if (filters.maxPrice)     items = items.filter(x => Number(x.price) <= Number(filters.maxPrice));
+  if (filters.type)          items = items.filter(x => x.type === filters.type);
+  if (filters.propertyType)  items = items.filter(x => x.propertyType === filters.propertyType);
+  if (filters.city)          items = items.filter(x => (x.city||'').toLowerCase() === String(filters.city).toLowerCase());
+  if (filters.minPrice)      items = items.filter(x => Number(x.price) >= Number(filters.minPrice));
+  if (filters.maxPrice)      items = items.filter(x => Number(x.price) <= Number(filters.maxPrice));
   return items;
 }
+
 export function currencyFmt(v, code='MUR'){
   try { return new Intl.NumberFormat(undefined,{style:'currency',currency:code,maximumFractionDigits:0}).format(v); }
   catch { return `${v} ${code}`; }
 }
 export function listingLink(id){ return `listing.html?id=${encodeURIComponent(id)}`; }
 export function firstImage(l){ return (l.images && l.images[0]) || ''; }
+
 export async function requireAuth(){
   return new Promise((res,rej)=>{
     const unsub = onAuthStateChanged(auth, u => {
       unsub();
       if (u) res(u);
-      else { alert('Please sign in first.'); window.location.href = './'; rej(new Error('Not authenticated')); }
+      else {
+        alert('Please sign in first.');
+        window.location.href = './';
+        rej(new Error('Not authenticated'));
+      }
     });
   });
 }
+
+// Load by ids (used for Recently Viewed & Saved grid)
 export async function getListingsByIds(ids = []) {
   const out = [];
   for (const id of ids) {
-    try { const s = await getDoc(doc(db,'listings',id)); if (s.exists()) out.push({id:s.id, ...s.data()}); } catch {}
+    try {
+      const snap = await getDoc(doc(db, 'listings', id));
+      if (snap.exists()) out.push({ id: snap.id, ...snap.data() });
+    } catch {}
   }
   out.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
   return out;
 }
+
 export { auth, db };
