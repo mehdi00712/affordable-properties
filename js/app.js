@@ -1,6 +1,5 @@
 // js/app.js
-// Nav + Auth modals + mobile drawer (with body scroll lock) + shared helpers
-// Friendly auth errors, redirect home on logout, client-side listing helpers.
+// Nav + Auth modals + mobile drawer (with body scroll lock) + helpers.
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
@@ -27,7 +26,6 @@ const app = initializeApp({
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Persist session for the tab
 (async () => {
   try { await setPersistence(auth, browserSessionPersistence); }
   catch (e) { console.warn("Auth persistence:", e?.message); }
@@ -42,7 +40,7 @@ const navAdmin = document.getElementById('nav-admin');
 const yearSpan = document.getElementById('year');
 if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
-// ---- Separate modals ----
+// ---- Modals ----
 const loginModal  = document.getElementById('loginModal');
 const signupModal = document.getElementById('signupModal');
 const closeLogin  = document.getElementById('closeLogin');
@@ -62,7 +60,6 @@ function openLogin(){ show(loginModal); hide(signupModal); }
 function openSignup(){ show(signupModal); hide(loginModal); }
 function closeBoth(){ hide(loginModal); hide(signupModal); }
 
-// Open/close handlers
 loginBtn?.addEventListener('click', openLogin);
 signupBtn?.addEventListener('click', openSignup);
 closeLogin?.addEventListener('click', ()=> hide(loginModal));
@@ -70,7 +67,6 @@ closeSignup?.addEventListener('click', ()=> hide(signupModal));
 goSignup?.addEventListener('click', (e)=>{ e.preventDefault(); openSignup(); });
 goLogin ?.addEventListener('click', (e)=>{ e.preventDefault(); openLogin (); });
 
-// Overlay click + ESC
 [loginModal, signupModal].forEach(m=>{
   m?.addEventListener('click', e=>{ if(e.target===m) hide(m); });
 });
@@ -92,7 +88,6 @@ function authMessage(err){
   }
 }
 
-// Auth submit
 loginForm?.addEventListener('submit', async e=>{
   e.preventDefault();
   try {
@@ -109,12 +104,10 @@ signupForm?.addEventListener('submit', async e=>{
   } catch(err) { alert(authMessage(err)); }
 });
 
-// Logout → go home from any page
 logoutBtn?.addEventListener('click', async ()=>{
   try { await signOut(auth); } finally { window.location.href = './'; }
 });
 
-// Auth state → nav
 onAuthStateChanged(auth, (user)=>{
   const logged = !!user;
   loginBtn?.classList.toggle('hide', logged);
@@ -125,32 +118,38 @@ onAuthStateChanged(auth, (user)=>{
   if (user && user.uid === SUPER_ADMIN_UID) navAdmin?.classList.remove('hide');
 });
 
-// ---- Hamburger + submenu (mobile) ----
+// ---- Hamburger + close button ----
 const hamburgerBtn = document.getElementById('hamburgerBtn');
 const navMenu = document.getElementById('navMenu');
+const closeMenuBtn = document.getElementById('closeMenu');
 
 function closeMenu(){
   navMenu?.classList.remove('show');
   hamburgerBtn?.setAttribute('aria-expanded','false');
-  document.body.classList.remove('nav-open'); // lock/unlock body scroll
+  document.body.classList.remove('nav-open');
+}
+function openMenu(){
+  navMenu?.classList.add('show');
+  hamburgerBtn?.setAttribute('aria-expanded','true');
+  document.body.classList.add('nav-open');
 }
 function toggleMenu(){
   if (!navMenu) return;
-  const show = !navMenu.classList.contains('show');
-  navMenu.classList.toggle('show', show);
-  hamburgerBtn?.setAttribute('aria-expanded', show ? 'true' : 'false');
-  document.body.classList.toggle('nav-open', show); // lock/unlock body scroll
+  navMenu.classList.contains('show') ? closeMenu() : openMenu();
 }
+
 hamburgerBtn?.addEventListener('click', (e)=>{ e.stopPropagation(); toggleMenu(); });
-navMenu?.addEventListener('click', (e)=>{ if (e.target.closest('a') || e.target.closest('button')) closeMenu(); });
+closeMenuBtn?.addEventListener('click', ()=> closeMenu());
+navMenu?.addEventListener('click', (e)=>{ if (e.target.closest('a') || e.target.closest('button')?.id !== 'closeMenu') closeMenu(); });
 document.addEventListener('click', (e)=>{
   if (!navMenu?.classList.contains('show')) return;
   const inside = navMenu.contains(e.target);
   const isBtn  = hamburgerBtn && hamburgerBtn.contains(e.target);
   if (!inside && !isBtn) closeMenu();
 });
+document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') closeMenu(); });
 
-// Mobile submenu accordion (desktop handled by CSS hover)
+// Mobile submenu accordion
 function isMobile(){ return window.matchMedia('(max-width: 980px)').matches; }
 function closeAllSubmenus(){
   document.querySelectorAll('#navMenu .submenu').forEach(s => s.classList.remove('show'));
@@ -182,7 +181,7 @@ function setTopbarShadow(){ if (topbar) topbar.classList.toggle('scrolled', wind
 setTopbarShadow();
 window.addEventListener('scroll', setTopbarShadow, { passive: true });
 
-// ---- Helpers (no composite indexes; sort client-side) ----
+// ---- Helpers (shared) ----
 export async function getApprovedListings(filters = {}){
   const q = query(collection(db,'listings'), where('status','==','approved'));
   const snap = await getDocs(q);
@@ -208,16 +207,11 @@ export async function requireAuth(){
     const unsub = onAuthStateChanged(auth, u => {
       unsub();
       if (u) res(u);
-      else {
-        alert('Please sign in first.');
-        window.location.href = './';
-        rej(new Error('Not authenticated'));
-      }
+      else { alert('Please sign in first.'); window.location.href = './'; rej(new Error('Not authenticated')); }
     });
   });
 }
 
-// Load by ids (used for Recently Viewed & Saved grid)
 export async function getListingsByIds(ids = []) {
   const out = [];
   for (const id of ids) {
