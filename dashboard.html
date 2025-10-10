@@ -7,19 +7,16 @@
 </head>
 <body>
 
-  <!-- Topbar (no menu inside) -->
   <header class="topbar">
     <div class="brand">
-      <a href="./" class="logo" aria-label="etoile property">
-        <img src="etoile.jpg" alt="etoile property"/>
-      </a>
+      <a href="./" class="logo"><img src="etoile.jpg" alt="etoile property"/></a>
     </div>
     <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">☰</button>
   </header>
 
-  <!-- Fullscreen mobile menu (drawer) -->
   <nav class="menu" id="navMenu" aria-label="Primary">
-    <!-- BUY -->
+    <button class="menu-close" id="closeMenu" aria-label="Close menu">×</button>
+
     <div class="has-sub">
       <button class="navlink sub-toggle" aria-expanded="false">Buy</button>
       <div class="submenu">
@@ -32,7 +29,6 @@
         <a href="./?propertyType=commercial">Commercial</a>
       </div>
     </div>
-    <!-- RENT -->
     <div class="has-sub">
       <button class="navlink sub-toggle" aria-expanded="false">Rent</button>
       <div class="submenu">
@@ -43,7 +39,6 @@
         <a href="./?type=rent&propertyType=commercial">Commercial</a>
       </div>
     </div>
-    <!-- ABROAD -->
     <div class="has-sub">
       <button class="navlink sub-toggle" aria-expanded="false">Property Abroad</button>
       <div class="submenu cols">
@@ -70,7 +65,6 @@
       <h1>Post a property</h1>
       <p class="muted">Create a new listing. Submissions go to the super admin for approval.</p>
 
-      <!-- Your existing create-listing form: keep IDs used by dashboard.js -->
       <form id="createListingForm" class="stack" autocomplete="off">
         <input id="title" placeholder="Title (e.g. 2 bedroom apartment)" required>
         <div class="stack">
@@ -114,13 +108,11 @@
           <textarea id="description" rows="4" placeholder="Describe the property"></textarea>
         </div>
 
-        <!-- Cloudinary upload URL input(s) your dashboard.js expects -->
         <div class="stack">
           <label>Photos (Cloudinary URLs)</label>
           <textarea id="images" rows="3" placeholder="Paste 1 URL per line"></textarea>
         </div>
 
-        <!-- Optional: map picker if you use map-pick.js -->
         <div class="stack">
           <label>Location (optional)</label>
           <div id="pickedLatLng" class="muted">No location selected</div>
@@ -138,7 +130,6 @@
     </div>
   </main>
 
-  <!-- Map picker modal if you use it -->
   <div id="mapPickModal" class="modal hide" aria-hidden="true">
     <div class="modal-dialog" role="dialog">
       <button class="modal-close" id="closePick" aria-label="Close">×</button>
@@ -151,7 +142,7 @@
     </div>
   </div>
 
-  <!-- Auth modals (same as index) -->
+  <!-- Auth modals -->
   <div id="loginModal" class="modal hide" aria-hidden="true">
     <div class="modal-dialog">
       <button class="modal-close" id="closeLogin">×</button>
