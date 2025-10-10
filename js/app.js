@@ -26,6 +26,7 @@ const app = initializeApp({
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Persist session
 (async () => {
   try { await setPersistence(auth, browserSessionPersistence); }
   catch (e) { console.warn("Auth persistence:", e?.message); }
@@ -123,24 +124,22 @@ const hamburgerBtn = document.getElementById('hamburgerBtn');
 const navMenu = document.getElementById('navMenu');
 const closeMenuBtn = document.getElementById('closeMenu');
 
-function closeMenu(){
-  navMenu?.classList.remove('show');
-  hamburgerBtn?.setAttribute('aria-expanded','false');
-  document.body.classList.remove('nav-open');
-}
 function openMenu(){
   navMenu?.classList.add('show');
   hamburgerBtn?.setAttribute('aria-expanded','true');
   document.body.classList.add('nav-open');
 }
-function toggleMenu(){
-  if (!navMenu) return;
-  navMenu.classList.contains('show') ? closeMenu() : openMenu();
+function closeMenu(){
+  navMenu?.classList.remove('show');
+  hamburgerBtn?.setAttribute('aria-expanded','false');
+  document.body.classList.remove('nav-open');
 }
+function toggleMenu(){ navMenu?.classList.contains('show') ? closeMenu() : openMenu(); }
 
 hamburgerBtn?.addEventListener('click', (e)=>{ e.stopPropagation(); toggleMenu(); });
-closeMenuBtn?.addEventListener('click', ()=> closeMenu());
-navMenu?.addEventListener('click', (e)=>{ if (e.target.closest('a') || e.target.closest('button')?.id !== 'closeMenu') closeMenu(); });
+closeMenuBtn?.addEventListener('click', (e)=>{ e.stopPropagation(); closeMenu(); });
+
+// Click outside to close
 document.addEventListener('click', (e)=>{
   if (!navMenu?.classList.contains('show')) return;
   const inside = navMenu.contains(e.target);
@@ -149,30 +148,27 @@ document.addEventListener('click', (e)=>{
 });
 document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') closeMenu(); });
 
-// Mobile submenu accordion
+// Mobile submenu accordion — keep menu open
 function isMobile(){ return window.matchMedia('(max-width: 980px)').matches; }
-function closeAllSubmenus(){
-  document.querySelectorAll('#navMenu .submenu').forEach(s => s.classList.remove('show'));
-  document.querySelectorAll('#navMenu .sub-toggle[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded','false'));
-}
 document.querySelectorAll('#navMenu .sub-toggle').forEach(btn=>{
   btn.addEventListener('click', (e)=>{
-    if (!isMobile()) return;
+    if (!isMobile()) return;  // desktop hover handled by CSS
     e.preventDefault();
     const submenu = btn.nextElementSibling;
     const isOpen = submenu?.classList.contains('show');
-    closeAllSubmenus();
+    document.querySelectorAll('#navMenu .submenu').forEach(s => s.classList.remove('show'));
+    document.querySelectorAll('#navMenu .sub-toggle').forEach(b => b.setAttribute('aria-expanded','false'));
     if (!isOpen && submenu){
       submenu.classList.add('show');
       btn.setAttribute('aria-expanded','true');
     }
   });
 });
-document.addEventListener('click', (e)=>{
-  if (!isMobile()) return;
-  const insideMenu = navMenu && navMenu.contains(e.target);
-  const isHamb = hamburgerBtn && hamburgerBtn.contains(e.target);
-  if (!insideMenu && !isHamb) closeAllSubmenus();
+
+// Close only when clicking an actual <a> link (not sub-toggle buttons)
+navMenu?.addEventListener('click', (e)=>{
+  const t = e.target;
+  if (t && t.tagName === 'A') closeMenu();
 });
 
 // Sticky topbar shadow
@@ -181,7 +177,7 @@ function setTopbarShadow(){ if (topbar) topbar.classList.toggle('scrolled', wind
 setTopbarShadow();
 window.addEventListener('scroll', setTopbarShadow, { passive: true });
 
-// ---- Helpers (shared) ----
+// ---- Helpers ----
 export async function getApprovedListings(filters = {}){
   const q = query(collection(db,'listings'), where('status','==','approved'));
   const snap = await getDocs(q);
