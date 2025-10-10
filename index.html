@@ -8,20 +8,20 @@
 </head>
 <body>
 
-  <!-- ===== Topbar (no menu inside) ===== -->
+  <!-- Topbar -->
   <header class="topbar">
     <div class="brand">
       <a href="./" class="logo" aria-label="etoile property">
         <img src="etoile.jpg" alt="etoile property logo"/>
       </a>
     </div>
-
-    <!-- Hamburger button toggles the off-canvas .menu -->
     <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">☰</button>
   </header>
 
-  <!-- ===== FULLSCREEN MENU (moved OUTSIDE header) ===== -->
+  <!-- FULLSCREEN MENU (drawer outside header) -->
   <nav class="menu" id="navMenu" aria-label="Primary">
+    <button class="menu-close" id="closeMenu" aria-label="Close menu">×</button>
+
     <!-- BUY -->
     <div class="has-sub">
       <button class="navlink sub-toggle" aria-expanded="false">Buy</button>
@@ -48,7 +48,7 @@
       </div>
     </div>
 
-    <!-- PROPERTY ABROAD -->
+    <!-- ABROAD -->
     <div class="has-sub">
       <button class="navlink sub-toggle" aria-expanded="false">Property Abroad</button>
       <div class="submenu cols">
@@ -72,9 +72,9 @@
     <button id="btn-logout" class="btn pill hide">Logout</button>
   </nav>
 
-  <!-- ===== Hero ===== -->
+  <!-- Hero -->
   <section class="hero">
-    <img class="hero-bg" src="https://images.unsplash.com/photo-1501183638710-841dd1904471?q=80&w=1920&auto=format&fit=crop" alt="Living room background"/>
+    <img class="hero-bg" src="https://images.unsplash.com/photo-1501183638710-841dd1904471?q=80&w=1920&auto=format&fit=crop" alt="">
     <div class="hero-inner">
       <h1><span class="accent">believe</span> in finding it</h1>
       <p class="sub">Search properties for sale and to rent</p>
@@ -92,33 +92,29 @@
     </div>
   </section>
 
-  <!-- ===== Filters (example UI; optional) ===== -->
+  <!-- Filters -->
   <div class="wrap mt">
     <div class="filters-bar" id="filtersBar">
-      <select id="f-city" aria-label="City">
-        <option value="">All cities</option>
-      </select>
-      <select id="f-type" aria-label="Buy or Rent">
+      <select id="f-city"><option value="">All cities</option></select>
+      <select id="f-type">
         <option value="">Buy/Rent</option>
         <option value="sale">Buy</option>
         <option value="rent">Rent</option>
       </select>
-      <select id="f-ptype" aria-label="Property type">
+      <select id="f-ptype">
         <option value="">Any type</option>
         <option value="apartment">Apartment</option>
         <option value="house">House</option>
         <option value="villa">Villa</option>
         <option value="commercial">Commercial</option>
       </select>
-      <select id="f-beds" aria-label="Bedrooms">
+      <select id="f-beds">
         <option value="">Beds</option>
-        <option value="1">1+</option>
-        <option value="2">2+</option>
-        <option value="3">3+</option>
-        <option value="4">4+</option>
+        <option value="1">1+</option><option value="2">2+</option>
+        <option value="3">3+</option><option value="4">4+</option>
       </select>
-      <input id="f-min" type="number" inputmode="numeric" placeholder="Min price" />
-      <input id="f-max" type="number" inputmode="numeric" placeholder="Max price" />
+      <input id="f-min" type="number" placeholder="Min price"/>
+      <input id="f-max" type="number" placeholder="Max price"/>
       <div class="filters-actions">
         <button id="f-apply" class="btn primary">Apply</button>
         <button id="f-save" class="btn outline">Save this search</button>
@@ -127,12 +123,11 @@
     </div>
   </div>
 
-  <!-- ===== Latest listings ===== -->
+  <!-- Latest listings -->
   <main class="wrap mt">
     <h2 class="section-title">Latest listings</h2>
     <div id="listingsGrid" class="grid"></div>
 
-    <!-- Recently viewed (optional; filled by JS) -->
     <div class="mt">
       <div class="rv-title"><span class="dot"></span><strong>Recently viewed</strong></div>
       <div id="recentRow" class="rv-row"></div>
@@ -154,8 +149,7 @@
 
   <footer class="footer">© <span id="year"></span> etoile property</footer>
 
-  <!-- ===== Auth Modals (separate) ===== -->
-  <!-- Sign in -->
+  <!-- Auth Modals -->
   <div id="loginModal" class="modal hide" aria-hidden="true">
     <div class="modal-dialog" role="dialog" aria-labelledby="loginTitle">
       <button class="modal-close" id="closeLogin" aria-label="Close">×</button>
@@ -171,7 +165,6 @@
     </div>
   </div>
 
-  <!-- Sign up -->
   <div id="signupModal" class="modal hide" aria-hidden="true">
     <div class="modal-dialog" role="dialog" aria-labelledby="signupTitle">
       <button class="modal-close" id="closeSignup" aria-label="Close">×</button>
@@ -187,7 +180,6 @@
     </div>
   </div>
 
-  <!-- Scripts -->
   <script type="module" src="js/app.js"></script>
   <script type="module" src="js/listings.js"></script>
 </body>
