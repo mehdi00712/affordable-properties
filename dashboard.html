@@ -3,22 +3,21 @@
 <head>
   <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Dashboard – etoile property</title>
-  <link rel="stylesheet" href="style.css"/>
-
-  <!-- Leaflet (for pick location) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="./style.css"/>
 </head>
 <body>
-<header class="topbar">
-  <div class="brand">
-    <a href="./" class="logo"><img src="etoile.jpg" alt="etoile property" /></a>
-  </div>
 
-  <!-- Hamburger button (mobile only) -->
-  <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">☰</button>
+  <!-- Topbar (no menu inside) -->
+  <header class="topbar">
+    <div class="brand">
+      <a href="./" class="logo" aria-label="etoile property">
+        <img src="etoile.jpg" alt="etoile property"/>
+      </a>
+    </div>
+    <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">☰</button>
+  </header>
 
-  <!-- One menu with all links/buttons -->
+  <!-- Fullscreen mobile menu (drawer) -->
   <nav class="menu" id="navMenu" aria-label="Primary">
     <!-- BUY -->
     <div class="has-sub">
@@ -33,7 +32,6 @@
         <a href="./?propertyType=commercial">Commercial</a>
       </div>
     </div>
-
     <!-- RENT -->
     <div class="has-sub">
       <button class="navlink sub-toggle" aria-expanded="false">Rent</button>
@@ -45,8 +43,7 @@
         <a href="./?type=rent&propertyType=commercial">Commercial</a>
       </div>
     </div>
-
-    <!-- PROPERTY ABROAD -->
+    <!-- ABROAD -->
     <div class="has-sub">
       <button class="navlink sub-toggle" aria-expanded="false">Property Abroad</button>
       <div class="submenu cols">
@@ -60,127 +57,128 @@
       </div>
     </div>
 
-    <!-- EVENTS (hidden for now) -->
-    <div class="has-sub hidden">
-      <button class="navlink sub-toggle" aria-expanded="false">Events</button>
-      <div class="submenu">
-        <a href="#" class="muted">Dubai Roadshow</a>
-      </div>
-    </div>
-
     <hr/>
-
-    <!-- Auth / actions -->
-    <a id="nav-dashboard" class="btn ghost hide" href="dashboard.html">Post a property</a>
-    <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
+    <a id="nav-dashboard" class="btn ghost hide" href="./dashboard.html">Post a property</a>
+    <a id="nav-admin" class="btn ghost hide" href="./admin.html">Admin</a>
     <button id="btn-login" class="btn pill">Sign in</button>
     <button id="btn-signup" class="btn pill">Sign up</button>
     <button id="btn-logout" class="btn pill hide">Logout</button>
   </nav>
-</header>
 
+  <main class="wrap mt">
+    <div class="panel">
+      <h1>Post a property</h1>
+      <p class="muted">Create a new listing. Submissions go to the super admin for approval.</p>
 
-<main class="wrap">
-  <h1>Post a property</h1>
-
-  <div class="panel">
-    <form id="listingForm" class="form">
-      <div class="grid-3">
-        <select id="type" required>
-          <option value="">Rent or Sale</option><option value="rent">Rent</option><option value="sale">Sale</option>
-        </select>
-        <select id="propertyType" required>
-          <option value="">Property type</option>
-          <option>apartment</option><option>house</option><option>villa</option><option>studio</option><option>commercial</option>
-        </select>
-        <select id="currency"><option>MUR</option><option>AED</option><option>USD</option></select>
-      </div>
-
-      <div class="grid-3">
-        <input id="title" placeholder="Listing title" required/>
-        <input id="price" type="number" placeholder="Price" required/>
-        <input id="sizeSqm" type="number" min="0" placeholder="Size (sqm)"/>
-      </div>
-
-      <div class="grid-3">
-        <input id="bedrooms" type="number" min="0" placeholder="Bedrooms"/>
-        <input id="bathrooms" type="number" min="0" placeholder="Bathrooms"/>
-        <input id="location" placeholder="Area / Street"/>
-      </div>
-
-      <div class="grid-3">
-        <input id="city" placeholder="City" required/>
-        <input id="country" placeholder="Country" required/>
-        <input id="contactPhone" placeholder="Phone" required/>
-      </div>
-
-      <textarea id="description" rows="5" placeholder="Description" required></textarea>
-
-      <fieldset class="fs">
-        <legend>Images</legend>
-        <input type="file" id="imagesInput" accept="image/*" multiple/>
-        <div id="preview" class="preview"></div>
-      </fieldset>
-
-      <fieldset class="fs">
-        <legend>Contact</legend>
-        <div class="grid-2">
-          <input id="contactName" placeholder="Your name" required/>
-          <input id="contactEmail" type="email" placeholder="Email" required/>
+      <!-- Your existing create-listing form: keep IDs used by dashboard.js -->
+      <form id="createListingForm" class="stack" autocomplete="off">
+        <input id="title" placeholder="Title (e.g. 2 bedroom apartment)" required>
+        <div class="stack">
+          <label>Type</label>
+          <select id="type" required>
+            <option value="sale">For sale</option>
+            <option value="rent">To rent</option>
+          </select>
         </div>
-      </fieldset>
-
-      <div class="panel" style="margin-top:10px">
-        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
-          <strong>Listing location on map (optional):</strong>
-          <button type="button" class="btn small" id="btn-pick-location">Pick on map</button>
-          <span class="muted" id="pickedLatLng">No location selected</span>
+        <div class="stack">
+          <label>Property type</label>
+          <select id="propertyType" required>
+            <option value="apartment">Apartment</option>
+            <option value="house">House</option>
+            <option value="villa">Villa</option>
+            <option value="commercial">Commercial</option>
+          </select>
         </div>
-        <input type="hidden" id="lat">
-        <input type="hidden" id="lng">
+
+        <div class="stack">
+          <label>Location</label>
+          <input id="city" placeholder="City" required>
+          <input id="country" placeholder="Country" required>
+        </div>
+
+        <div class="stack">
+          <label>Details</label>
+          <input id="bedrooms" type="number" min="0" placeholder="Bedrooms">
+          <input id="bathrooms" type="number" min="0" placeholder="Bathrooms">
+          <input id="sizeSqm" type="number" min="0" placeholder="Size (sqm)">
+        </div>
+
+        <div class="stack">
+          <label>Price</label>
+          <input id="price" type="number" min="0" placeholder="Amount" required>
+          <input id="currency" placeholder="Currency (e.g. MUR, AED)" value="MUR">
+        </div>
+
+        <div class="stack">
+          <label>Description</label>
+          <textarea id="description" rows="4" placeholder="Describe the property"></textarea>
+        </div>
+
+        <!-- Cloudinary upload URL input(s) your dashboard.js expects -->
+        <div class="stack">
+          <label>Photos (Cloudinary URLs)</label>
+          <textarea id="images" rows="3" placeholder="Paste 1 URL per line"></textarea>
+        </div>
+
+        <!-- Optional: map picker if you use map-pick.js -->
+        <div class="stack">
+          <label>Location (optional)</label>
+          <div id="pickedLatLng" class="muted">No location selected</div>
+          <input id="lat" type="hidden"><input id="lng" type="hidden">
+          <button type="button" class="btn outline" id="btn-pick-location">Pick on map</button>
+        </div>
+
+        <button class="btn primary" type="submit">Submit for approval</button>
+      </form>
+    </div>
+
+    <div class="panel mt">
+      <h2>Your listings</h2>
+      <div id="myListings" class="grid"></div>
+    </div>
+  </main>
+
+  <!-- Map picker modal if you use it -->
+  <div id="mapPickModal" class="modal hide" aria-hidden="true">
+    <div class="modal-dialog" role="dialog">
+      <button class="modal-close" id="closePick" aria-label="Close">×</button>
+      <h3 class="modal-title">Pick location</h3>
+      <div id="pickMap" style="height:320px;border-radius:12px;overflow:hidden"></div>
+      <div class="stack" style="margin-top:12px">
+        <button id="savePick" class="btn primary">Save</button>
+        <button id="clearPick" class="btn">Clear</button>
       </div>
-
-      <button type="submit" class="btn primary">Submit for approval</button>
-    </form>
-  </div>
-
-  <h2 class="section-title">Your listings</h2>
-  <div id="myListings" class="grid"></div>
-</main>
-
-<template id="myCardTpl">
-  <div class="card">
-    <div class="card-img"></div>
-    <div class="card-body">
-      <h3 class="card-title"></h3>
-      <p class="card-meta"></p>
-      <p class="card-price"></p>
-      <p class="badge"></p>
-      <div class="actions">
-        <button class="btn small">Edit</button>
-        <button class="btn outline small delete">Delete</button>
-      </div>
     </div>
   </div>
-</template>
 
-<!-- Map picker modal -->
-<div id="mapPickModal" class="modal hide">
-  <div class="modal-dialog" style="width:min(920px,95vw);padding:0">
-    <button class="modal-close" id="closePick">×</button>
-    <div style="height:min(70vh,560px); width:100%; overflow:hidden">
-      <div id="pickMap" style="height:100%; width:100%"></div>
-    </div>
-    <div style="display:flex; gap:8px; padding:12px; border-top:1px solid var(--line);">
-      <button id="savePick" class="btn primary">Use this location</button>
-      <button id="clearPick" class="btn">Clear</button>
+  <!-- Auth modals (same as index) -->
+  <div id="loginModal" class="modal hide" aria-hidden="true">
+    <div class="modal-dialog">
+      <button class="modal-close" id="closeLogin">×</button>
+      <h3 class="modal-title">Sign in</h3>
+      <form id="emailLoginForm" class="stack">
+        <input id="loginEmail" type="email" placeholder="you@example.com" required />
+        <input id="loginPassword" type="password" placeholder="Password" required />
+        <button type="submit" class="btn primary">Sign in</button>
+      </form>
+      <p class="muted" style="margin-top:10px">Don’t have an account? <a href="#" id="goSignup">Create one</a></p>
     </div>
   </div>
-</div>
+  <div id="signupModal" class="modal hide" aria-hidden="true">
+    <div class="modal-dialog">
+      <button class="modal-close" id="closeSignup">×</button>
+      <h3 class="modal-title">Create account</h3>
+      <form id="emailSignupForm" class="stack">
+        <input id="signupEmail" type="email" placeholder="newuser@example.com" required />
+        <input id="signupPassword" type="password" placeholder="Password (min 6)" required />
+        <button type="submit" class="btn">Sign up</button>
+      </form>
+      <p class="muted" style="margin-top:10px">Already have an account? <a href="#" id="goLogin">Sign in</a></p>
+    </div>
+  </div>
 
-<script type="module" src="js/app.js"></script>
-<script type="module" src="js/cloudinary.js"></script>
-<script type="module" src="js/dashboard.js"></script>
-<script type="module" src="js/map-pick.js"></script>
+  <script type="module" src="./js/app.js"></script>
+  <script type="module" src="./js/map-pick.js"></script>
+  <script type="module" src="./js/dashboard.js"></script>
 </body>
 </html>
