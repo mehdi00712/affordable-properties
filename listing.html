@@ -2,271 +2,87 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Property – etoile property</title>
-  <link rel="stylesheet" href="style.css"/>
-  <style>
-    /* Page-specific polish */
-    .detail-wrap { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
-    .detail-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-    .gallery { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; }
-    .gallery .hero-img { aspect-ratio: 16/10; background:#f3f4f6; border-radius: 14px; background-size: cover; background-position: center; }
-    .thumbs { display: grid; grid-template-rows: repeat(2, 1fr); gap: 8px; }
-    .thumb { border-radius: 12px; background:#f3f4f6; background-size: cover; background-position: center; min-height: 120px; cursor: pointer; }
-    .title-row { display:flex; align-items:center; justify-content: space-between; gap: 12px; margin-top: 12px; }
-    .title-row h1 { font-size: clamp(22px, 2.6vw, 30px); margin:0; }
-    .price { font-weight: 700; font-size: clamp(18px, 2vw, 22px); }
-    .meta { color: var(--muted); margin-top: 4px; }
-    .chip { display:inline-block; padding:4px 10px; border:1px solid var(--line); border-radius:999px; font-size: 12px; margin-right: 6px; }
-    .panel { border:1px solid var(--line); border-radius:14px; padding:14px; background:#fff; }
-    .stack > * + * { margin-top: 10px; }
-    .contact-card .owner { font-weight:600; }
-    #detailFav.btn { min-width: 110px; }
-    @media (max-width: 980px){
-      .detail-grid { grid-template-columns: 1fr; }
-      .gallery { grid-template-columns: 1fr; }
-      .thumbs { grid-template-columns: repeat(3, 1fr); grid-template-rows: none; }
-      .thumb { min-height: 90px; }
-    }
-  </style>
+  <title>Listing – etoile property</title>
+  <link rel="stylesheet" href="./style.css"/>
 </head>
 <body>
-<!-- Top bar -->
-<header class="topbar">
-  <div class="brand">
-    <a href="./" class="logo"><img src="etoile.jpg" alt="etoile property" /></a>
-  </div>
 
-  <!-- Hamburger button (mobile only) -->
-  <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">☰</button>
+  <header class="topbar">
+    <div class="brand">
+      <a href="./" class="logo"><img src="etoile.jpg" alt="etoile property" /></a>
+    </div>
+    <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">☰</button>
+  </header>
 
-  <!-- One menu with all links/buttons (same structure as admin/index) -->
   <nav class="menu" id="navMenu" aria-label="Primary">
-    <!-- BUY -->
     <div class="has-sub">
-      <button class="navlink sub-toggle" aria-expanded="false">Buy</button>
+      <button class="navlink sub-toggle">Buy</button>
       <div class="submenu">
         <a href="./?type=sale">Property for sale</a>
-        <a href="#" class="muted">Offplan property</a>
-        <a href="#" class="muted">Property valuation</a>
-        <a href="#" class="muted">Investors</a>
-        <a href="#" class="muted">Mortgage</a>
-        <a href="./?propertyType=expat" class="muted">Expat Approved</a>
         <a href="./?propertyType=commercial">Commercial</a>
       </div>
     </div>
-
-    <!-- RENT -->
     <div class="has-sub">
-      <button class="navlink sub-toggle" aria-expanded="false">Rent</button>
+      <button class="navlink sub-toggle">Rent</button>
       <div class="submenu">
         <a href="./?type=rent">Property to rent</a>
-        <a href="#" class="muted">Student property to rent</a>
-        <a href="#" class="muted">Holiday homes</a>
-        <a href="#" class="muted">Short term rentals</a>
         <a href="./?type=rent&propertyType=commercial">Commercial</a>
       </div>
     </div>
-
-    <!-- PROPERTY ABROAD -->
-    <div class="has-sub">
-      <button class="navlink sub-toggle" aria-expanded="false">Property Abroad</button>
-      <div class="submenu cols">
-        <a href="#" class="muted">All Countries</a>
-        <a href="#" class="muted">UAE</a>
-        <a href="#" class="muted">UK</a>
-        <a href="#" class="muted">Spain</a>
-        <a href="#" class="muted">France</a>
-        <a href="#" class="muted">Greece</a>
-        <a href="#" class="muted">Sell Overseas Property</a>
-      </div>
-    </div>
-
-    <!-- EVENTS (hidden for now) -->
-    <div class="has-sub hidden">
-      <button class="navlink sub-toggle" aria-expanded="false">Events</button>
-      <div class="submenu">
-        <a href="#" class="muted">Dubai Roadshow</a>
-      </div>
-    </div>
-
     <hr/>
-
-    <!-- Auth / actions -->
-    <a id="nav-dashboard" class="btn ghost hide" href="dashboard.html">Post a property</a>
-    <a id="nav-admin" class="btn ghost hide" href="admin.html">Admin</a>
+    <a id="nav-dashboard" class="btn ghost hide" href="./dashboard.html">Post a property</a>
+    <a id="nav-admin" class="btn ghost hide" href="./admin.html">Admin</a>
     <button id="btn-login" class="btn pill">Sign in</button>
     <button id="btn-signup" class="btn pill">Sign up</button>
     <button id="btn-logout" class="btn pill hide">Logout</button>
   </nav>
-</header>
 
-<!-- Detail content -->
-<div class="detail-wrap">
-  <!-- Gallery -->
-  <div class="gallery">
-    <div id="heroImg" class="hero-img"></div>
-    <div class="thumbs" id="thumbs"></div>
-  </div>
+  <main class="wrap mt">
+    <div class="panel">
+      <div id="gallery" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;"></div>
 
-  <!-- Title + price row -->
-  <div class="title-row">
-    <div>
-      <h1 id="title">(Loading…)</h1>
-      <div id="meta" class="meta"></div>
-      <div id="chips" style="margin-top:8px"></div>
-    </div>
-    <div style="display:flex; align-items:center; gap:8px">
-      <div id="price" class="price"></div>
-      <button id="detailFav" class="btn outline">♡ Save</button>
-    </div>
-  </div>
+      <h1 id="title" style="margin-top:10px">Loading…</h1>
+      <p id="meta" class="muted"></p>
+      <h2 id="price" style="margin:6px 0 10px"></h2>
 
-  <!-- Main grid: left info, right contact -->
-  <div class="detail-grid" style="margin-top:16px">
-    <section class="panel stack">
-      <h3>Overview</h3>
-      <div id="overview" class="stack">
-        <div><span class="chip" id="chip-type">-</span><span class="chip" id="chip-prop">-</span><span class="chip" id="chip-beds">-</span></div>
-        <div id="address" class="muted">-</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button id="detailFav" class="btn">♡ Save</button>
+        <button id="btn-report" class="btn outline">Report listing</button>
       </div>
-      <h3>Description</h3>
-      <p id="description" class="muted">Loading description…</p>
-      <h3>Features</h3>
-      <ul id="features" style="margin-left:18px"></ul>
-    </section>
 
-    <aside class="panel contact-card stack">
+      <h3 style="margin-top:16px">Description</h3>
+      <p id="desc"></p>
+
       <h3>Contact</h3>
-      <div>Owner UID: <span id="owner" class="owner">-</span></div>
-      <button class="btn primary" id="btn-enquire">Enquire</button>
-      <p class="muted" style="font-size:14px">We’ll send your enquiry to the owner.</p>
-    </aside>
+      <p id="contact" class="muted"></p>
+    </div>
+  </main>
+
+  <!-- Auth modals -->
+  <div id="loginModal" class="modal hide" aria-hidden="true">
+    <div class="modal-dialog">
+      <button class="modal-close" id="closeLogin">×</button>
+      <h3 class="modal-title">Sign in</h3>
+      <form id="emailLoginForm" class="stack">
+        <input id="loginEmail" type="email" placeholder="you@example.com" required />
+        <input id="loginPassword" type="password" placeholder="Password" required />
+        <button type="submit" class="btn primary">Sign in</button>
+      </form>
+    </div>
   </div>
-</div>
-
-<footer class="footer">© <span id="year"></span> etoile property</footer>
-
-<!-- Login modal -->
-<div id="loginModal" class="modal hide" aria-hidden="true">
-  <div class="modal-dialog">
-    <button class="modal-close" id="closeLogin" aria-label="Close">×</button>
-    <h3 class="modal-title">Sign in</h3>
-    <form id="emailLoginForm" class="stack">
-      <input id="loginEmail" type="email" placeholder="you@example.com" required />
-      <input id="loginPassword" type="password" placeholder="Password" required />
-      <button type="submit" class="btn primary">Sign in</button>
-    </form>
-    <p class="modal-switch">Don’t have an account? <a href="#" id="goSignup">Create one</a></p>
+  <div id="signupModal" class="modal hide" aria-hidden="true">
+    <div class="modal-dialog">
+      <button class="modal-close" id="closeSignup">×</button>
+      <h3 class="modal-title">Create account</h3>
+      <form id="emailSignupForm" class="stack">
+        <input id="signupEmail" type="email" placeholder="newuser@example.com" required />
+        <input id="signupPassword" type="password" placeholder="Password (min 6)" required />
+        <button type="submit" class="btn">Sign up</button>
+      </form>
+    </div>
   </div>
-</div>
 
-<!-- Signup modal -->
-<div id="signupModal" class="modal hide" aria-hidden="true">
-  <div class="modal-dialog">
-    <button class="modal-close" id="closeSignup" aria-label="Close">×</button>
-    <h3 class="modal-title">Create account</h3>
-    <form id="emailSignupForm" class="stack">
-      <input id="signupEmail" type="email" placeholder="newuser@example.com" required />
-      <input id="signupPassword" type="password" placeholder="Password (min 6)" required />
-      <button type="submit" class="btn">Sign up</button>
-    </form>
-    <p class="modal-switch">Already have an account? <a href="#" id="goLogin">Sign in</a></p>
-  </div>
-</div>
-
-<!-- Scripts -->
-<script type="module" src="js/app.js"></script>
-<script type="module" src="js/listing.js"></script>
-
-<!-- Inline: render the listing content from Firestore -->
-<script type="module">
-  import { db, currencyFmt } from './js/app.js';
-  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-  const $ = (sel, root=document)=>root.querySelector(sel);
-  const params = new URLSearchParams(location.search);
-  const id = params.get('id');
-
-  const heroImg = $('#heroImg');
-  const thumbs = $('#thumbs');
-  const titleEl = $('#title');
-  const metaEl = $('#meta');
-  const chipsEl = $('#chips');
-  const priceEl = $('#price');
-  const descEl = $('#description');
-  const featuresEl = $('#features');
-  const addressEl = $('#address');
-  const chipType = $('#chip-type');
-  const chipProp = $('#chip-prop');
-  const chipBeds = $('#chip-beds');
-  const ownerEl = $('#owner');
-
-  if (!id) {
-    titleEl.textContent = 'Missing listing id';
-  } else {
-    try {
-      const snap = await getDoc(doc(db, 'listings', id));
-      if (!snap.exists()) {
-        titleEl.textContent = 'Listing not found';
-      } else {
-        const l = { id: snap.id, ...snap.data() };
-
-        // Title / price / meta
-        titleEl.textContent = l.title || '(no title)';
-        priceEl.textContent = currencyFmt(l.price || 0, l.currency || 'MUR') + (l.type === 'rent' ? ' / mo' : '');
-        metaEl.textContent = `${l.propertyType || '-'} • ${l.bedrooms ?? '-'} bd • ${l.city || '-'}, ${l.country || '-'}`;
-
-        // Chips / overview
-        chipType.textContent = l.type === 'rent' ? 'To rent' : 'For sale';
-        chipProp.textContent = l.propertyType || '-';
-        chipBeds.textContent = `${l.bedrooms ?? '-'} bd`;
-        addressEl.textContent = l.address || [l.city, l.country].filter(Boolean).join(', ');
-
-        // Description
-        descEl.textContent = l.description || 'No description provided.';
-
-        // Features list (if array)
-        featuresEl.innerHTML = '';
-        const feats = Array.isArray(l.features) ? l.features : [];
-        if (feats.length) {
-          feats.forEach(f => {
-            const li = document.createElement('li');
-            li.textContent = f;
-            featuresEl.appendChild(li);
-          });
-        } else {
-          const li = document.createElement('li');
-          li.textContent = 'No extra features listed.';
-          featuresEl.appendChild(li);
-        }
-
-        // Owner
-        ownerEl.textContent = l.ownerUid || '-';
-
-        // Gallery
-        const imgs = Array.isArray(l.images) ? l.images : [];
-        const hero = imgs[0] || 'https://via.placeholder.com/1200x675?text=No+Image';
-        heroImg.style.backgroundImage = `url('${hero}')`;
-        thumbs.innerHTML = '';
-        imgs.slice(1, 5).forEach(url => {
-          const t = document.createElement('div');
-          t.className = 'thumb';
-          t.style.backgroundImage = `url('${url}')`;
-          t.addEventListener('click', ()=>{ heroImg.style.backgroundImage = `url('${url}')`; });
-          thumbs.appendChild(t);
-        });
-      }
-    } catch (e) {
-      titleEl.textContent = 'Error loading listing';
-      console.error(e);
-    }
-  }
-
-  // Enquire button (placeholder action)
-  const enquireBtn = document.getElementById('btn-enquire');
-  enquireBtn?.addEventListener('click', ()=>{
-    alert('Thanks! Your enquiry has been noted (demo).');
-  });
-</script>
+  <script type="module" src="./js/app.js"></script>
+  <script type="module" src="./js/listing.js"></script>
 </body>
 </html>
